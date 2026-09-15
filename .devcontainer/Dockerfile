@@ -90,9 +90,8 @@ RUN curl -sL "https://storage.googleapis.com/antigravity-public/antigravity-cli/
     && ln -sf /usr/local/bin/agy /home/codespace/.gemini/bin/agy \
     && chown -R codespace:codespace /home/codespace/.gemini 2>/dev/null || true
 
-# 3c. Wrapper de xdg-open para KDE y autenticación OAuth en Google Chrome
 RUN [ ! -f /usr/bin/xdg-open.orig ] && cp /usr/bin/xdg-open /usr/bin/xdg-open.orig || true \
-    && printf '#!/usr/bin/env bash\nURL="$1"\n[ -z "$URL" ] && exit 0\necho "[$(date -u)] xdg-open called with: $URL" >> /tmp/xdg-open.log\necho "$URL" > /tmp/last_oauth_url.txt\nchmod 666 /tmp/last_oauth_url.txt /tmp/xdg-open.log 2>/dev/null || true\nif [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then\n    KDE_PID=$(pgrep -f "plasmashell" | head -n 1)\n    if [ -n "$KDE_PID" ] && [ -r "/proc/$KDE_PID/environ" ]; then\n        KDE_DBUS=$(tr "\\0" "\\n" < "/proc/$KDE_PID/environ" | grep "^DBUS_SESSION_BUS_ADDRESS=")\n        [ -n "$KDE_DBUS" ] && export "$KDE_DBUS"\n    fi\nfi\nexport DISPLAY="${DISPLAY:-:1}"\nif command -v google-chrome >/dev/null 2>&1; then\n    nohup /usr/bin/google-chrome "$URL" >/dev/null 2>&1 &\nfi\nexit 0\n' > /usr/bin/xdg-open \
+    && printf '#!/usr/bin/env bash\nURL="$1"\n[ -z "$URL" ] && exit 0\necho "[$(date -u)] xdg-open called with: $URL" >> /tmp/xdg-open.log\necho "$URL" > /tmp/last_oauth_url.txt\nchmod 666 /tmp/last_oauth_url.txt /tmp/xdg-open.log 2>/dev/null || true\nexport DISPLAY="${DISPLAY:-:2}"\nif command -v google-chrome >/dev/null 2>&1; then\n    nohup /usr/bin/google-chrome --no-sandbox --disable-gpu --disable-dev-shm-usage "$URL" >/tmp/chrome-oauth.log 2>&1 &\nfi\nexit 0\n' > /usr/bin/xdg-open \
     && chmod +x /usr/bin/xdg-open
 
 # 3d. Instalar ttyd para sesión web interactiva de Antigravity en Puerto 3000
