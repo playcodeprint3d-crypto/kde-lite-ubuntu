@@ -57,6 +57,22 @@ if command -v kwriteconfig5 >/dev/null 2>&1; then
     kwriteconfig5 --file kscreenlockerrc --group Daemon --key Timeout 0 2>/dev/null || true
 fi
 
+# 4b. Configurar fondo de pantalla PlayCode Cyberpunk en KDE Plasma
+WP_FILE="/usr/share/wallpapers/playcode-wallpaper.jpg"
+WS_DIR="$(find /workspaces -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"
+[ -z "$WS_DIR" ] && WS_DIR="/workspaces/kde-lite-ubuntu"
+if [ ! -f "$WP_FILE" ] && [ -f "$WS_DIR/assets/wallpaper.jpg" ]; then
+    sudo mkdir -p /usr/share/wallpapers 2>/dev/null || true
+    sudo cp -f "$WS_DIR/assets/wallpaper.jpg" "$WP_FILE" 2>/dev/null || true
+    sudo chmod 644 "$WP_FILE" 2>/dev/null || true
+fi
+
+if [ -f "$WP_FILE" ] && command -v kwriteconfig5 >/dev/null 2>&1; then
+    for c in 1 2 3 4; do
+        kwriteconfig5 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group "$c" --group Wallpaper --group org.kde.image --group General --key Image "file://$WP_FILE" 2>/dev/null || true
+    done
+fi
+
 # 5. Asegurar permisos de directorio socket X11 y runtime dir
 export XDG_RUNTIME_DIR="/tmp/runtime-${USER:-codespace}"
 mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
@@ -250,6 +266,10 @@ fi
 
 if command -v openbox >/dev/null 2>&1; then
     openbox &
+fi
+
+if command -v feh >/dev/null 2>&1 && [ -f "/usr/share/wallpapers/playcode-wallpaper.jpg" ]; then
+    feh --bg-fill /usr/share/wallpapers/playcode-wallpaper.jpg &
 fi
 
 WS_DIR="$(find /workspaces -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"

@@ -48,6 +48,7 @@ RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selectio
         openbox \
         daemonize \
         openssh-server \
+        feh \
         python3 \
         /tmp/google-chrome.deb \
     && rm -f /tmp/google-chrome.deb \
@@ -149,6 +150,15 @@ RUN mkdir -p /home/codespace/.vnc \
         > /home/codespace/.vnc/config
 
 USER root
+
+# ---------------------------------------------------------------------------
+# 6b. Configurar fondo de pantalla PlayCode Cyberpunk predeterminado
+# ---------------------------------------------------------------------------
+COPY assets/wallpaper.jpg /usr/share/wallpapers/playcode-wallpaper.jpg
+RUN mkdir -p /usr/share/wallpapers/PlayCode/contents/images \
+    && cp /usr/share/wallpapers/playcode-wallpaper.jpg /usr/share/wallpapers/PlayCode/contents/images/1920x1080.jpg \
+    && printf '[Desktop Entry]\nName=PlayCode Cyberpunk\nX-KDE-PluginInfo-Name=PlayCode\n' > /usr/share/wallpapers/PlayCode/metadata.desktop \
+    && chmod -R a+rX /usr/share/wallpapers
 
 # ---------------------------------------------------------------------------
 # 7. Script global de inicio del escritorio: /usr/local/bin/start-desktop.sh
