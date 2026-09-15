@@ -55,7 +55,7 @@ RUN mkdir -p /opt/antigravity-ide \
     && chmod -R a+rX /opt/antigravity-ide
 
 # Wrapper ejecutable para Antigravity IDE
-RUN printf '#!/usr/bin/env bash\nunset ELECTRON_RUN_AS_NODE\nexport DISPLAY="${DISPLAY:-:1}"\nif [ $# -eq 0 ]; then\n    set -- "/workspaces/linux-kde-lite"\nfi\nexec /opt/antigravity-ide/bin/antigravity-ide \\\n    --disable-gpu \\\n    --disable-dev-shm-usage \\\n    --no-sandbox \\\n    "$@"\n' > /usr/local/bin/antigravity-ide \
+RUN printf '#!/usr/bin/env bash\nunset ELECTRON_RUN_AS_NODE\nexport DISPLAY="${DISPLAY:-:1}"\nif [ $# -eq 0 ]; then\n    WS_DIR="$(find /workspaces -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"\n    [ -z "$WS_DIR" ] && WS_DIR="/workspaces/kde-lite-ubuntu"\n    set -- "$WS_DIR"\nfi\nexec /opt/antigravity-ide/bin/antigravity-ide \\\n    --disable-gpu \\\n    --disable-dev-shm-usage \\\n    --no-sandbox \\\n    "$@"\n' > /usr/local/bin/antigravity-ide \
     && chmod +x /usr/local/bin/antigravity-ide \
     && ln -sf /usr/local/bin/antigravity-ide /usr/local/bin/antigravity
 
