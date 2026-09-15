@@ -14,6 +14,9 @@ DAEMON_PID_FILE="/tmp/.ensure-ports-public-daemon.pid"
 LOG_DIR="${HOME:-/home/codespace}/.vnc"
 mkdir -p "$LOG_DIR" 2>/dev/null || true
 
+# Asegurar token de autenticación para gh CLI dentro del codespace
+export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-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}}"
+
 IS_DAEMON=false
 for arg in "$@"; do
     if [ "$arg" = "--daemon" ] || [ "$arg" = "-d" ]; then
