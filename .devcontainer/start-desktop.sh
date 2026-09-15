@@ -256,7 +256,11 @@ WS_DIR="$(find /workspaces -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n
 [ -z "$WS_DIR" ] && WS_DIR="/workspaces/kde-lite-ubuntu"
 
 while true; do
-    if [ -x /usr/local/bin/antigravity-ide ]; then
+    if [ -x /usr/local/bin/antigravity ]; then
+        /usr/local/bin/antigravity --no-sandbox --disable-gpu --disable-dev-shm-usage
+    elif [ -x /opt/antigravity/antigravity ]; then
+        /opt/antigravity/antigravity --no-sandbox --disable-gpu --disable-dev-shm-usage
+    elif [ -x /usr/local/bin/antigravity-ide ]; then
         /usr/local/bin/antigravity-ide --no-sandbox --disable-gpu --disable-dev-shm-usage "$WS_DIR"
     fi
     sleep 2

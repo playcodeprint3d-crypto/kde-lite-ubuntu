@@ -2,7 +2,7 @@
 # Linux KDE Lite — Imagen Docker con escritorio completo pre-instalado
 # =============================================================================
 # Basada en Ubuntu 22.04 LTS devcontainer base (ligera, ~350MB base)
-# Evita el desbordamiento de disco "no space left on device" de universal:2
+# Incluye Google Antigravity 2.0 Hub (UI de Chat con IA sin IDE tradicional)
 # =============================================================================
 
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
@@ -18,7 +18,7 @@ RUN if ! id -u codespace >/dev/null 2>&1; then \
     && chmod 0440 /etc/sudoers.d/codespace
 
 # ---------------------------------------------------------------------------
-# 1. Limpiar repos e instalar KDE + Chrome + VNC + Openbox
+# 1. Instalar dependencias del sistema, escritorio KDE, VNC, SSH y Openbox
 # ---------------------------------------------------------------------------
 RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selections \
     && apt-get update -y \
@@ -47,6 +47,7 @@ RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selectio
         xdotool \
         openbox \
         daemonize \
+        openssh-server \
         python3 \
         /tmp/google-chrome.deb \
     && rm -f /tmp/google-chrome.deb \
@@ -56,29 +57,27 @@ RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selectio
         /opt/google/chrome/google-chrome 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# 3. Instalar Google Antigravity IDE
+# 2. Instalar Google Antigravity 2.0 Hub (Aplicación oficial de Chat con IA)
 # ---------------------------------------------------------------------------
-RUN mkdir -p /opt/antigravity-ide \
-    && curl -sL "https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.5.5-4923483625488384/linux-x64/Antigravity%20IDE.tar.gz" \
-        | tar -xz -C /opt/antigravity-ide --strip-components=1 \
-    && chown -R root:root /opt/antigravity-ide \
-    && chmod -R a+rX /opt/antigravity-ide
+RUN mkdir -p /opt/antigravity \
+    && curl -sL "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.14.0-5449404535144448/linux-x64/Antigravity.tar.gz" \
+        | tar -xz -C /opt/antigravity --strip-components=1 \
+    && chown -R root:root /opt/antigravity \
+    && chmod -R a+rX /opt/antigravity
 
-# Wrapper ejecutable para Antigravity IDE
-RUN printf '#!/usr/bin/env bash\nunset ELECTRON_RUN_AS_NODE\nexport DISPLAY="${DISPLAY:-:1}"\nif [ $# -eq 0 ]; then\n    WS_DIR="$(find /workspaces -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"\n    [ -z "$WS_DIR" ] && WS_DIR="/workspaces/kde-lite-ubuntu"\n    set -- "$WS_DIR"\nfi\nexec /opt/antigravity-ide/bin/antigravity-ide \\\n    --disable-gpu \\\n    --disable-dev-shm-usage \\\n    --no-sandbox \\\n    "$@"\n' > /usr/local/bin/antigravity-ide \
-    && chmod +x /usr/local/bin/antigravity-ide \
-    && ln -sf /usr/local/bin/antigravity-ide /usr/local/bin/antigravity
+# Wrapper ejecutable para Antigravity 2.0
+RUN printf '#!/usr/bin/env bash\nunset ELECTRON_RUN_AS_NODE\nexport DISPLAY="${DISPLAY:-:2}"\nexec /opt/antigravity/antigravity \\\n    --disable-gpu \\\n    --disable-dev-shm-usage \\\n    --no-sandbox \\\n    "$@"\n' > /usr/local/bin/antigravity \
+    && chmod +x /usr/local/bin/antigravity \
+    && ln -sf /usr/local/bin/antigravity /usr/local/bin/antigravity-hub \
+    && ln -sf /usr/local/bin/antigravity /usr/local/bin/antigravity-ide
 
-# Entrada de escritorio para Antigravity IDE y Antigravity Web Hub
-RUN [ -f /opt/antigravity-ide/resources/app/resources/linux/code.png ] \
-    && cp /opt/antigravity-ide/resources/app/resources/linux/code.png /usr/share/pixmaps/antigravity-ide.png \
-    || true \
-    && printf '[Desktop Entry]\nName=Antigravity IDE\nComment=Google Antigravity Code Editor\nExec=/usr/local/bin/antigravity-ide %%F\nIcon=/usr/share/pixmaps/antigravity-ide.png\nType=Application\nStartupNotify=false\nStartupWMClass=Antigravity-ide\nCategories=Development;IDE;TextEditor;\n' \
-        > /usr/share/applications/antigravity-ide.desktop \
-    && printf '[Desktop Entry]\nName=Antigravity Web Hub (Puerto 3000)\nComment=Google Antigravity 2.0 Web UI\nExec=google-chrome --new-window http://localhost:3000\nIcon=/usr/share/pixmaps/antigravity-ide.png\nType=Application\nStartupNotify=false\nCategories=Development;IDE;\n' \
-        > /usr/share/applications/antigravity-web.desktop \
-    && mkdir -p /etc/opt/chrome/policies/managed \
-    && printf '{\n  "RestoreOnStartup": 4,\n  "RestoreOnStartupURLs": ["http://localhost:3000"],\n  "HomepageLocation": "http://localhost:3000",\n  "HomepageIsNewTabPage": false,\n  "ShowHomeButton": true,\n  "BookmarkBarEnabled": true,\n  "ManagedBookmarks": [{"name": "Antigravity 2.0 Web Hub", "url": "http://localhost:3000"}, {"name": "PlayCode Campus LMS", "url": "https://edu.playcode.com.ar"}]\n}\n' > /etc/opt/chrome/policies/managed/antigravity.json
+# Entrada de escritorio para Antigravity 2.0 y Antigravity Web Hub
+RUN [ -f /opt/antigravity/resources/app/resources/linux/code.png ] \
+    && cp /opt/antigravity/resources/app/resources/linux/code.png /usr/share/pixmaps/antigravity.png 2>/dev/null || true \
+    && printf '[Desktop Entry]\nName=Antigravity 2.0\nComment=Google Antigravity AI Platform\nExec=/usr/local/bin/antigravity %%F\nIcon=/usr/share/pixmaps/antigravity.png\nType=Application\nStartupNotify=false\nStartupWMClass=Antigravity\nCategories=Development;IDE;\n' \
+        > /usr/share/applications/antigravity.desktop \
+    && printf '[Desktop Entry]\nName=Antigravity Web Hub (Puerto 3000)\nComment=Google Antigravity 2.0 Web UI\nExec=google-chrome --new-window http://localhost:3000\nIcon=/usr/share/pixmaps/antigravity.png\nType=Application\nStartupNotify=false\nCategories=Development;IDE;\n' \
+        > /usr/share/applications/antigravity-web.desktop
 
 # ---------------------------------------------------------------------------
 # 3b. Instalar Google Antigravity CLI (agy - Servidor Web Hub Puerto 3000)
@@ -137,8 +136,8 @@ USER codespace
 RUN mkdir -p /home/codespace/Desktop \
     && cp /usr/share/applications/google-chrome.desktop /home/codespace/Desktop/ 2>/dev/null || true \
     && chmod +x /home/codespace/Desktop/google-chrome.desktop 2>/dev/null || true \
-    && cp /usr/share/applications/antigravity-ide.desktop /home/codespace/Desktop/ 2>/dev/null || true \
-    && chmod +x /home/codespace/Desktop/antigravity-ide.desktop 2>/dev/null || true \
+    && cp /usr/share/applications/antigravity.desktop /home/codespace/Desktop/ 2>/dev/null || true \
+    && chmod +x /home/codespace/Desktop/antigravity.desktop 2>/dev/null || true \
     && cp /usr/share/applications/antigravity-web.desktop /home/codespace/Desktop/ 2>/dev/null || true \
     && chmod +x /home/codespace/Desktop/antigravity-web.desktop 2>/dev/null || true
 
