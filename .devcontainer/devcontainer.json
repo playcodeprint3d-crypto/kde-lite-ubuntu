@@ -3,6 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "remoteUser": "codespace",
   "hostRequirements": {
     "cpus": 2,
     "memory": "8gb",

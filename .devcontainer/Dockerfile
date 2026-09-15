@@ -1,22 +1,33 @@
 # =============================================================================
 # Linux KDE Lite — Imagen Docker con escritorio completo pre-instalado
 # =============================================================================
-# Esta imagen se construye UNA sola vez. Cada alumno recibe una copia
-# con KDE Plasma, TigerVNC, noVNC, Google Chrome y Antigravity IDE
-# ya instalados. Solo necesita ejecutar start-desktop.sh (~5 seg).
+# Basada en Ubuntu 22.04 LTS devcontainer base (ligera, ~350MB base)
+# Evita el desbordamiento de disco "no space left on device" de universal:2
 # =============================================================================
 
-FROM mcr.microsoft.com/devcontainers/universal:2
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 
 # Evitar prompts interactivos durante la instalación
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Asegurar usuario codespace con permisos sudo sin password
+RUN if ! id -u codespace >/dev/null 2>&1; then \
+        useradd -m -s /bin/bash -G sudo codespace; \
+    fi \
+    && echo "codespace ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/codespace \
+    && chmod 0440 /etc/sudoers.d/codespace
+
 # ---------------------------------------------------------------------------
-# 1. Limpiar repositorios con llaves GPG rotas e instalar KDE + Chrome + VNC
+# 1. Limpiar repos e instalar KDE + Chrome + VNC + Openbox
 # ---------------------------------------------------------------------------
 RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selections \
-    && rm -f /etc/apt/sources.list.d/yarn*.list 2>/dev/null || true \
-    && rm -f /etc/apt/sources.list.d/github-cli*.list 2>/dev/null || true \
+    && apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        wget \
+        gnupg \
+        software-properties-common \
     && wget -q -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends \
@@ -33,11 +44,10 @@ RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selectio
         dbus-x11 \
         x11-xserver-utils \
         xterm \
-        curl \
-        wget \
         xdotool \
         openbox \
         daemonize \
+        python3 \
         /tmp/google-chrome.deb \
     && rm -f /tmp/google-chrome.deb \
     && apt-get clean \
@@ -79,7 +89,7 @@ RUN curl -sL "https://storage.googleapis.com/antigravity-public/antigravity-cli/
     && chmod +x /usr/local/bin/agy \
     && mkdir -p /home/codespace/.gemini/bin \
     && ln -sf /usr/local/bin/agy /home/codespace/.gemini/bin/agy \
-    && chown -R codespace:codespace /home/codespace/.gemini
+    && chown -R codespace:codespace /home/codespace/.gemini 2>/dev/null || true
 
 # 3c. Wrapper de xdg-open para KDE y autenticación OAuth en Google Chrome
 RUN [ ! -f /usr/bin/xdg-open.orig ] && cp /usr/bin/xdg-open /usr/bin/xdg-open.orig || true \
@@ -89,7 +99,6 @@ RUN [ ! -f /usr/bin/xdg-open.orig ] && cp /usr/bin/xdg-open /usr/bin/xdg-open.or
 # 3d. Instalar ttyd para sesión web interactiva de Antigravity en Puerto 3000
 RUN curl -fsSL -o /usr/local/bin/ttyd "https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64" \
     && chmod +x /usr/local/bin/ttyd
-
 
 # ---------------------------------------------------------------------------
 # 4. Configurar noVNC: página de redirección automática
@@ -162,6 +171,3 @@ RUN chmod +x /etc/profile.d/01-start-desktop.sh
 COPY ensure-ports-public.sh /usr/local/bin/ensure-ports-public.sh
 RUN chmod +x /usr/local/bin/ensure-ports-public.sh \
     && ln -sf /usr/local/bin/ensure-ports-public.sh /usr/local/bin/ensure-ports-public
-
-
-
