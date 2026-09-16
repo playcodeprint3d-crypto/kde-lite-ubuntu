@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "KDE Lite Ubuntu",
   "build": {
     "dockerfile": "Dockerfile"

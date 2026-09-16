@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # =============================================================================
 # start-desktop.sh — PlayCode KDE Lite + Antigravity 2.0
 # Sin set -e: cada servicio es independiente, un fallo no mata al resto
