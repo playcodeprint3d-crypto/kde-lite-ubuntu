@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# start-desktop.sh — PlayCode KDE Lite + Antigravity 2.0
+# start-desktop.sh â€” PlayCode KDE Lite + Antigravity 2.0
 # Sin set -e: cada servicio es independiente, un fallo no mata al resto
 # =============================================================================
 
@@ -17,7 +17,7 @@ echo "$$" > "$START_LOCK"
 trap 'rm -f "$START_LOCK"' EXIT INT TERM
 
 echo "=========================================================="
-echo " PlayCode — Iniciando escritorio KDE + Antigravity 2.0"
+echo " PlayCode â€” Iniciando escritorio KDE + Antigravity 2.0"
 echo "=========================================================="
 
 LOG_DIR="$HOME/.vnc"
@@ -63,7 +63,7 @@ fi
 sudo mkdir -p /tmp/.X11-unix 2>/dev/null || true
 sudo chmod 1777 /tmp/.X11-unix 2>/dev/null || true
 
-# 6. TigerVNC :1 → KDE → 8080 + 6080
+# 6. TigerVNC :1 â†’ KDE â†’ 8080 + 6080
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
 sudo rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
 echo "[+] Iniciando TigerVNC :1 (KDE Plasma)..."
@@ -89,7 +89,7 @@ if command -v autocutsel >/dev/null 2>&1; then
     autocutsel -selection CLIPBOARD -fork 2>/dev/null || true
 fi
 
-# 7. TigerVNC :2 → Antigravity 2.0 → 4000
+# 7. TigerVNC :2 â†’ Antigravity 2.0 â†’ 4000
 rm -f /tmp/.X2-lock /tmp/.X11-unix/X2 2>/dev/null || true
 sudo rm -f /tmp/.X2-lock /tmp/.X11-unix/X2 2>/dev/null || true
 
@@ -104,7 +104,7 @@ mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
 chmod 0700 "$XDG_RUNTIME_DIR" 2>/dev/null || true
 command -v autocutsel >/dev/null 2>&1 && { autocutsel -fork 2>/dev/null; autocutsel -selection CLIPBOARD -fork 2>/dev/null; } || true
 command -v openbox >/dev/null 2>&1 && openbox & sleep 1
-[ -f "/usr/share/wallpapers/playcode-wallpaper.jpg" ] && command -v feh >/dev/null 2>&1 && feh --bg-fill /usr/share/wallpapers/playcode-wallpaper.jpg & || true
+[ -f "/usr/share/wallpapers/playcode-wallpaper.jpg" ] && command -v feh >/dev/null 2>&1 && feh --bg-fill /usr/share/wallpapers/playcode-wallpaper.jpg 2>/dev/null &
 while true; do
     if [ -x /usr/local/bin/antigravity ]; then
         /usr/local/bin/antigravity --no-sandbox --disable-gpu --disable-dev-shm-usage
@@ -133,7 +133,7 @@ if ! ss -tlpn 2>/dev/null | grep -q ':4000'; then
     websockify -D --web /usr/share/novnc 4000 localhost:5902 2>/dev/null || true
 fi
 
-# 8. ttyd → puerto 3000
+# 8. ttyd â†’ puerto 3000
 sudo tee /usr/local/bin/agy-web-session >/dev/null << 'SESSION'
 #!/usr/bin/env bash
 WS_DIR="$(find /workspaces -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"
@@ -142,7 +142,7 @@ cd "$WS_DIR" 2>/dev/null || cd "$HOME"
 export TERM=xterm-256color LANG=C.UTF-8 LC_ALL=C.UTF-8
 clear
 echo ""
-echo -e "\033[1;38;2;255;165;0m▶ PLAY CODE\033[0m \033[1;37m• Google Antigravity 2.0 CLI Hub\033[0m"
+echo -e "\033[1;38;2;255;165;0mâ–¶ PLAY CODE\033[0m \033[1;37mâ€¢ Google Antigravity 2.0 CLI Hub\033[0m"
 echo -e "\033[38;2;140;160;180m  Directorio: $WS_DIR\033[0m"
 echo ""
 AGY_BIN="$(command -v agy 2>/dev/null || echo '')"
@@ -150,7 +150,7 @@ AGY_BIN="$(command -v agy 2>/dev/null || echo '')"
 if [ -n "$AGY_BIN" ] && [ -x "$AGY_BIN" ]; then
     while true; do
         "$AGY_BIN" --add-dir="$WS_DIR" --dangerously-skip-permissions "$@"
-        echo -e "\033[1;33m[!] Sesión finalizada. ENTER para reiniciar...\033[0m"
+        echo -e "\033[1;33m[!] SesiÃ³n finalizada. ENTER para reiniciar...\033[0m"
         read -r; clear
     done
 else
@@ -165,7 +165,7 @@ if ! ss -tlpn 2>/dev/null | grep -q ':3000'; then
     setsid nohup /usr/local/bin/ttyd \
         --port 3000 --writable \
         -t disableLeaveAlert=true \
-        -t titleFixed='Google Antigravity 2.0 — PlayCode' \
+        -t titleFixed='Google Antigravity 2.0 â€” PlayCode' \
         -t fontSize=15 \
         -t fontFamily='JetBrains Mono, Menlo, Consolas, monospace' \
         -t 'theme={"background":"#141618","foreground":"#f0f6fc","cursor":"#58a6ff"}' \
@@ -177,7 +177,7 @@ if ! ss -tlpn 2>/dev/null | grep -q ':3000'; then
     done
 fi
 
-# 9. Supervisor de puertos públicos
+# 9. Supervisor de puertos pÃºblicos
 if [ -n "${CODESPACE_NAME:-}" ]; then
     ENSURE_BIN="/usr/local/bin/ensure-ports-public.sh"
     [ ! -f "$ENSURE_BIN" ] && ENSURE_BIN="$WS_DIR/scripts/ensure-ports-public.sh"
@@ -189,8 +189,8 @@ fi
 
 CS="${CODESPACE_NAME:-codespace}"
 echo "=========================================================="
-echo " ¡Todo listo! URLs:"
-echo "  🖥  KDE     : https://${CS}-8080.app.github.dev/vnc.html"
-echo "  🤖  Antigrav: https://${CS}-4000.app.github.dev/vnc.html"
-echo "  💻  CLI     : https://${CS}-3000.app.github.dev/"
+echo " Â¡Todo listo! URLs:"
+echo "  ðŸ–¥  KDE     : https://${CS}-8080.app.github.dev/vnc.html"
+echo "  ðŸ¤–  Antigrav: https://${CS}-4000.app.github.dev/vnc.html"
+echo "  ðŸ’»  CLI     : https://${CS}-3000.app.github.dev/"
 echo "=========================================================="
