@@ -1,12 +1,12 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 set -euo pipefail
 
 # =============================================================================
-# Supervisor y Visibilidad Pública de Puertos en GitHub Codespaces
+# Supervisor y Visibilidad PÃºblica de Puertos en GitHub Codespaces
 # =============================================================================
 # Garantiza que los servicios esenciales (VNC, noVNC, Antigravity 2.0 Web Hub)
 # y sus puertos (8080, 6080, 3000) permanezcan SIEMPRE activos y con visibilidad
-# PÚBLICA, incluso si el usuario desconecta o cierra la interfaz de VS Code.
+# PÃšBLICA, incluso si el usuario desconecta o cierra la interfaz de VS Code.
 # =============================================================================
 
 TARGET_PORTS=(8080 6080 3000 4000)
@@ -14,7 +14,7 @@ DAEMON_PID_FILE="/tmp/.ensure-ports-public-daemon.pid"
 LOG_DIR="${HOME:-/home/codespace}/.vnc"
 mkdir -p "$LOG_DIR" 2>/dev/null || true
 
-# Asegurar token de autenticación para gh CLI dentro del codespace
+# Asegurar token de autenticaciÃ³n para gh CLI dentro del codespace
 export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-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}}"
 
 IS_DAEMON=false
@@ -24,7 +24,7 @@ for arg in "$@"; do
     fi
 done
 
-# Función para iniciar Antigravity Web Hub interactivo vía ttyd en puerto 3000
+# FunciÃ³n para iniciar Antigravity Web Hub interactivo vÃ­a ttyd en puerto 3000
 start_antigravity_hub() {
     if [ -x /usr/local/bin/ttyd ] && [ -x /usr/local/bin/agy-web-session ]; then
         echo "[+] [Supervisor] Iniciando Antigravity 2.0 Web Hub en puerto 3000..."
@@ -40,7 +40,7 @@ start_antigravity_hub() {
     fi
 }
 
-# Función para iniciar websockify (noVNC)
+# FunciÃ³n para iniciar websockify (noVNC)
 start_websockify() {
     local port="$1"
     local vnc_port="${2:-5901}"
@@ -48,13 +48,13 @@ start_websockify() {
     websockify -D --web /usr/share/novnc "${port}" "localhost:${vnc_port}" 2>/dev/null || true
 }
 
-# Función para iniciar TigerVNC
+# FunciÃ³n para iniciar TigerVNC
 start_vnc() {
     echo "[+] [Supervisor] Iniciando servidor TigerVNC en :1 (puerto 5901)..."
     setsid nohup vncserver :1 -geometry 1366x768 -depth 24 -localhost yes -SecurityTypes None -cleanstale -noreset </dev/null >> "${LOG_DIR}/vncserver.log" 2>&1 || true
 }
 
-# Supervisar que los procesos estén escuchando en sus puertos locales
+# Supervisar que los procesos estÃ©n escuchando en sus puertos locales
 supervise_services() {
     local restarted=false
 
@@ -162,11 +162,11 @@ check_and_update_ports() {
     done
 
     if [ ${#to_update[@]} -gt 0 ]; then
-        echo "[+] Asegurando visibilidad pública para puertos objetivo: ${to_update[*]}"
+        echo "[+] Asegurando visibilidad pÃºblica para puertos objetivo: ${to_update[*]}"
         gh codespace ports visibility "${to_update[@]}" -c "$CODESPACE_NAME" >/dev/null 2>&1 || true
     fi
 
-    # Comprobar si todos los puertos objetivo están presentes y públicos
+    # Comprobar si todos los puertos objetivo estÃ¡n presentes y pÃºblicos
     ports_json=$(gh codespace ports -c "$CODESPACE_NAME" --json sourcePort,visibility 2>/dev/null || echo "[]")
     local all_ready=true
     for tp in "${TARGET_PORTS[@]}"; do
@@ -189,12 +189,12 @@ check_and_update_ports() {
 # Modo Daemon Continuo
 # ---------------------------------------------------------------------------
 if [ "$IS_DAEMON" = true ]; then
-    # Evitar múltiples instancias del daemon
+    # Evitar mÃºltiples instancias del daemon
     if [ -f "$DAEMON_PID_FILE" ]; then
         OLD_PID=$(cat "$DAEMON_PID_FILE" 2>/dev/null || echo "")
         if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
             if grep -q "ensure-ports-public" "/proc/$OLD_PID/cmdline" 2>/dev/null; then
-                echo "[!] Daemon ensure-ports-public ya está en ejecución (PID: $OLD_PID). Saliendo."
+                echo "[!] Daemon ensure-ports-public ya estÃ¡ en ejecuciÃ³n (PID: $OLD_PID). Saliendo."
                 exit 0
             fi
         fi
@@ -202,15 +202,15 @@ if [ "$IS_DAEMON" = true ]; then
     echo "$$" > "$DAEMON_PID_FILE"
     trap 'rm -f "$DAEMON_PID_FILE"' EXIT INT TERM
 
-    echo "[+] Daemon de supervisión activo (PID: $$)..."
+    echo "[+] Daemon de supervisiÃ³n activo (PID: $$)..."
     cycle=0
     while true; do
         supervise_services
 
-        # Verificar visibilidad pública cada 10 ciclos (~30 segundos) o en el primer ciclo
+        # Verificar visibilidad pÃºblica cada 10 ciclos (~30 segundos) o en el primer ciclo
         if [ "$cycle" -eq 0 ] || [ $((cycle % 10)) -eq 0 ]; then
             check_and_update_ports >/dev/null 2>&1 || true
-            echo "[$(date -u +'%Y-%m-%d %H:%M:%SZ')] Supervisión activa - Puertos 8080, 6080, 3000 verificados" > /tmp/.codespace-heartbeat.log 2>/dev/null || true
+            echo "[$(date -u +'%Y-%m-%d %H:%M:%SZ')] SupervisiÃ³n activa - Puertos 8080, 6080, 3000 verificados" > /tmp/.codespace-heartbeat.log 2>/dev/null || true
         fi
 
         sleep 3
@@ -219,7 +219,7 @@ if [ "$IS_DAEMON" = true ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Modo Ejecución Única / Disparador
+# Modo EjecuciÃ³n Ãšnica / Disparador
 # ---------------------------------------------------------------------------
 # 1. Supervisar servicios inmediatamente
 supervise_services
@@ -234,7 +234,7 @@ while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
     set -e
 
     if [ "$status" -eq 0 ]; then
-        echo "[+] Confirmado: Todos los puertos del sistema (${TARGET_PORTS[*]}) están públicos."
+        echo "[+] Confirmado: Todos los puertos del sistema (${TARGET_PORTS[*]}) estÃ¡n pÃºblicos."
         break
     fi
 
@@ -242,7 +242,7 @@ while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
     attempt=$((attempt + 1))
 done
 
-# 3. Asegurar que el daemon continuo esté corriendo en segundo plano
+# 3. Asegurar que el daemon continuo estÃ© corriendo en segundo plano
 DAEMON_RUNNING=false
 if [ -f "$DAEMON_PID_FILE" ]; then
     DPID=$(cat "$DAEMON_PID_FILE" 2>/dev/null || echo "")
@@ -252,7 +252,7 @@ if [ -f "$DAEMON_PID_FILE" ]; then
 fi
 
 if [ "$DAEMON_RUNNING" = false ]; then
-    echo "[+] Iniciando daemon de supervisión en segundo plano..."
+    echo "[+] Iniciando daemon de supervisiÃ³n en segundo plano..."
     SCRIPT_PATH="$0"
     [ ! -f "$SCRIPT_PATH" ] && SCRIPT_PATH="/usr/local/bin/ensure-ports-public.sh"
     setsid nohup bash "$SCRIPT_PATH" --daemon >"${LOG_DIR}/ensure-ports-public.log" 2>&1 &

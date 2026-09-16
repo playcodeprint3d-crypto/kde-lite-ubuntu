@@ -1,5 +1,5 @@
-# =============================================================================
-# Linux KDE Lite — Imagen Docker con escritorio completo pre-instalado
+﻿# =============================================================================
+# Linux KDE Lite â€” Imagen Docker con escritorio completo pre-instalado
 # =============================================================================
 # Basada en Ubuntu 22.04 LTS devcontainer base (ligera, ~350MB base)
 # Incluye Google Antigravity 2.0 Hub (UI de Chat con IA sin IDE tradicional)
@@ -7,7 +7,7 @@
 
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
 
-# Evitar prompts interactivos durante la instalación
+# Evitar prompts interactivos durante la instalaciÃ³n
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Asegurar usuario codespace con permisos sudo sin password
@@ -58,7 +58,7 @@ RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selectio
         /opt/google/chrome/google-chrome 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# 2. Instalar Google Antigravity 2.0 Hub (Aplicación oficial de Chat con IA)
+# 2. Instalar Google Antigravity 2.0 Hub (AplicaciÃ³n oficial de Chat con IA)
 # ---------------------------------------------------------------------------
 RUN mkdir -p /opt/antigravity \
     && curl -sL "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.14.0-5449404535144448/linux-x64/Antigravity.tar.gz" \
@@ -95,14 +95,14 @@ RUN [ ! -f /usr/bin/xdg-open.orig ] && cp /usr/bin/xdg-open /usr/bin/xdg-open.or
     && printf '#!/usr/bin/env bash\nURL="$1"\n[ -z "$URL" ] && exit 0\necho "[$(date -u)] xdg-open called with: $URL" >> /tmp/xdg-open.log\necho "$URL" > /tmp/last_oauth_url.txt\nchmod 666 /tmp/last_oauth_url.txt /tmp/xdg-open.log 2>/dev/null || true\nexport DISPLAY="${DISPLAY:-:2}"\nif command -v google-chrome >/dev/null 2>&1; then\n    nohup /usr/bin/google-chrome --no-sandbox --disable-gpu --disable-dev-shm-usage "$URL" >/tmp/chrome-oauth.log 2>&1 &\nfi\nexit 0\n' > /usr/bin/xdg-open \
     && chmod +x /usr/bin/xdg-open
 
-# 3d. Instalar ttyd para sesión web interactiva de Antigravity en Puerto 3000
+# 3d. Instalar ttyd para sesiÃ³n web interactiva de Antigravity en Puerto 3000
 RUN curl -fsSL -o /usr/local/bin/ttyd "https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64" \
     && chmod +x /usr/local/bin/ttyd
 
 # ---------------------------------------------------------------------------
-# 4. Configurar noVNC: página de redirección automática
+# 4. Configurar noVNC: pÃ¡gina de redirecciÃ³n automÃ¡tica
 # ---------------------------------------------------------------------------
-RUN printf '<!DOCTYPE html>\n<html lang="es">\n<head>\n    <meta charset="UTF-8">\n    <meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=remote">\n    <title>KDE Plasma Lite</title>\n</head>\n<body style="background-color: #1b1e20; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px;">\n    <h2>Iniciando KDE Plasma Desktop...</h2>\n    <p>Si no eres redirigido automáticamente, <a href="vnc.html?autoconnect=true&resize=remote" style="color: #3daee9;">haz clic aquí</a>.</p>\n</body>\n</html>\n' > /usr/share/novnc/index.html
+RUN printf '<!DOCTYPE html>\n<html lang="es">\n<head>\n    <meta charset="UTF-8">\n    <meta http-equiv="refresh" content="0; url=vnc.html?autoconnect=true&resize=remote">\n    <title>KDE Plasma Lite</title>\n</head>\n<body style="background-color: #1b1e20; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px;">\n    <h2>Iniciando KDE Plasma Desktop...</h2>\n    <p>Si no eres redirigido automÃ¡ticamente, <a href="vnc.html?autoconnect=true&resize=remote" style="color: #3daee9;">haz clic aquÃ­</a>.</p>\n</body>\n</html>\n' > /usr/share/novnc/index.html
 
 # ---------------------------------------------------------------------------
 # 5. Patch de portapapeles bidireccional en noVNC
@@ -141,7 +141,7 @@ RUN mkdir -p /home/codespace/Desktop \
     && cp /usr/share/applications/antigravity-web.desktop /home/codespace/Desktop/ 2>/dev/null || true \
     && chmod +x /home/codespace/Desktop/antigravity-web.desktop 2>/dev/null || true
 
-# Configuración de VNC
+# ConfiguraciÃ³n de VNC
 RUN mkdir -p /home/codespace/.vnc \
     && printf '#!/bin/bash\nunset SESSION_MANAGER\nunset DBUS_SESSION_BUS_ADDRESS\nexport XDG_SESSION_TYPE=x11\nexport XDG_CURRENT_DESKTOP=KDE\nexport DESKTOP_SESSION=plasma\nexport KDE_FULL_SESSION=true\nexport QT_QPA_PLATFORM=xcb\nexport XDG_RUNTIME_DIR="/tmp/runtime-${USER:-codespace}"\nmkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true\nchmod 0700 "$XDG_RUNTIME_DIR" 2>/dev/null || true\n\nif command -v kwriteconfig5 >/dev/null 2>&1; then\n    kwriteconfig5 --file kwinrc --group Compositing --key Enabled false 2>/dev/null || true\n    kwriteconfig5 --file kscreenlockerrc --group Daemon --key Autolock false 2>/dev/null || true\n    kwriteconfig5 --file kscreenlockerrc --group Daemon --key LockOnResume false 2>/dev/null || true\n    kwriteconfig5 --file kscreenlockerrc --group Daemon --key Timeout 0 2>/dev/null || true\nfi\n\nxset s off 2>/dev/null || true\nxset s noblank 2>/dev/null || true\n\n[ -r "$HOME/.Xresources" ] && xrdb "$HOME/.Xresources"\n\nif command -v vncconfig >/dev/null 2>&1; then\n    vncconfig -nowin &\nfi\nif command -v autocutsel >/dev/null 2>&1; then\n    autocutsel -fork\n    autocutsel -selection CLIPBOARD -fork\nfi\n\nif command -v dbus-run-session >/dev/null 2>&1; then\n    exec dbus-run-session -- startplasma-x11\nelse\n    if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then\n        eval $(dbus-launch --sh-syntax --exit-with-session)\n    fi\n    exec startplasma-x11\nfi\n' \
         > /home/codespace/.vnc/xstartup \
@@ -168,13 +168,13 @@ RUN chmod +x /usr/local/bin/start-desktop.sh \
     && ln -sf /usr/local/bin/start-desktop.sh /usr/local/bin/start-desktop
 
 # ---------------------------------------------------------------------------
-# 8. Autostart secundario: garantiza arranque en cualquier conexión/terminal
+# 8. Autostart secundario: garantiza arranque en cualquier conexiÃ³n/terminal
 # ---------------------------------------------------------------------------
 COPY 01-start-desktop.sh /etc/profile.d/01-start-desktop.sh
 RUN chmod +x /etc/profile.d/01-start-desktop.sh
 
 # ---------------------------------------------------------------------------
-# 9. Script para asegurar visibilidad pública de puertos en GitHub Codespaces
+# 9. Script para asegurar visibilidad pÃºblica de puertos en GitHub Codespaces
 # ---------------------------------------------------------------------------
 COPY ensure-ports-public.sh /usr/local/bin/ensure-ports-public.sh
 RUN chmod +x /usr/local/bin/ensure-ports-public.sh \
