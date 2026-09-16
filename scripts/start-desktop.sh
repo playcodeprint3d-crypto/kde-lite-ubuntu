@@ -180,7 +180,7 @@ if ! ss -tlpn 2>/dev/null | grep -q ':3000'; then
     setsid nohup /usr/local/bin/ttyd \
         --port 3000 --writable \
         -t disableLeaveAlert=true \
-        -t titleFixed='Google Antigravity 2.0 â€” PlayCode' \
+        -t titleFixed='Google Antigravity 2.0 - PlayCode' \
         -t fontSize=15 \
         -t fontFamily='JetBrains Mono, Menlo, Consolas, monospace' \
         -t 'theme={"background":"#141618","foreground":"#f0f6fc","cursor":"#58a6ff"}' \
@@ -192,7 +192,7 @@ if ! ss -tlpn 2>/dev/null | grep -q ':3000'; then
     done
 fi
 
-# 9. Supervisor de puertos pÃºblicos
+# 9. Supervisor de puertos publicos
 if [ -n "${CODESPACE_NAME:-}" ]; then
     ENSURE_BIN="/usr/local/bin/ensure-ports-public.sh"
     [ ! -f "$ENSURE_BIN" ] && ENSURE_BIN="$WS_DIR/scripts/ensure-ports-public.sh"
@@ -204,8 +204,8 @@ fi
 
 CS="${CODESPACE_NAME:-codespace}"
 echo "=========================================================="
-echo " Â¡Todo listo! URLs:"
-echo "  ðŸ–¥  KDE     : https://${CS}-8080.app.github.dev/vnc.html"
-echo "  ðŸ¤–  Antigrav: https://${CS}-4000.app.github.dev/vnc.html"
-echo "  ðŸ’»  CLI     : https://${CS}-3000.app.github.dev/"
+echo " [!] Listo! URLs de acceso:"
+echo "  * KDE     : https://${CS}-8080.app.github.dev/vnc.html"
+echo "  * Antigrav: https://${CS}-4000.app.github.dev/vnc.html"
+echo "  * CLI     : https://${CS}-3000.app.github.dev/"
 echo "=========================================================="
