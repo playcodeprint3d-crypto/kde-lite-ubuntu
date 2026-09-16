@@ -63,6 +63,21 @@ fi
 sudo mkdir -p /tmp/.X11-unix 2>/dev/null || true
 sudo chmod 1777 /tmp/.X11-unix 2>/dev/null || true
 
+# 5b. Matar servicios previos (crítico al reiniciar el Codespace)
+echo "[*] Limpiando procesos previos de VNC y websockify..."
+# Matar VNC servers de forma limpia primero
+vncserver -kill :1 2>/dev/null || true
+vncserver -kill :2 2>/dev/null || true
+sleep 1
+# Matar procesos residuales por si vncserver -kill no alcanzó
+pkill -f "Xtigervnc.*:1" 2>/dev/null || true
+pkill -f "Xtigervnc.*:2" 2>/dev/null || true
+# Matar websockify en los puertos que usaremos
+pkill -f "websockify.*8080" 2>/dev/null || true
+pkill -f "websockify.*6080" 2>/dev/null || true
+pkill -f "websockify.*4000" 2>/dev/null || true
+sleep 1
+
 # 6. TigerVNC :1 â†’ KDE â†’ 8080 + 6080
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
 sudo rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
