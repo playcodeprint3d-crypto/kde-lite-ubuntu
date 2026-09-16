@@ -157,7 +157,7 @@ cd "$WS_DIR" 2>/dev/null || cd "$HOME"
 export TERM=xterm-256color LANG=C.UTF-8 LC_ALL=C.UTF-8
 clear
 echo ""
-echo -e "\033[1;38;2;255;165;0mâ–¶ PLAY CODE\033[0m \033[1;37mâ€¢ Google Antigravity 2.0 CLI Hub\033[0m"
+printf '\033[1;38;2;255;165;0m\xe2\x96\xb6 PLAY CODE\033[0m \033[1;37m\xe2\x80\xa2 Google Antigravity 2.0 CLI Hub\033[0m\n'
 echo -e "\033[38;2;140;160;180m  Directorio: $WS_DIR\033[0m"
 echo ""
 AGY_BIN="$(command -v agy 2>/dev/null || echo '')"
@@ -165,7 +165,7 @@ AGY_BIN="$(command -v agy 2>/dev/null || echo '')"
 if [ -n "$AGY_BIN" ] && [ -x "$AGY_BIN" ]; then
     while true; do
         "$AGY_BIN" --add-dir="$WS_DIR" --dangerously-skip-permissions "$@"
-        echo -e "\033[1;33m[!] SesiÃ³n finalizada. ENTER para reiniciar...\033[0m"
+        printf '\033[1;33m[!] Sesi\xc3\xb3n finalizada. ENTER para reiniciar...\033[0m\n'
         read -r; clear
     done
 else
