@@ -202,37 +202,10 @@ fi
 EOF
 sudo chmod +x /usr/local/bin/agy-web-session 2>/dev/null || true
 
-# Configurar iconos y entradas de escritorio
-mkdir -p "$HOME/Desktop"
-[ -f "/opt/antigravity-ide/resources/app/resources/linux/code.png" ] && sudo cp /opt/antigravity-ide/resources/app/resources/linux/code.png /usr/share/pixmaps/antigravity-ide.png 2>/dev/null || true
+# Asegurar limpieza de accesos directos obsoletos
+rm -f "$HOME/Desktop/antigravity"*.desktop 2>/dev/null || true
+sudo rm -f /usr/share/applications/antigravity*.desktop 2>/dev/null || true
 
-sudo bash -c 'cat << "EOF" > /usr/share/applications/antigravity-ide.desktop
-[Desktop Entry]
-Name=Antigravity IDE
-Comment=Google Antigravity Code Editor
-Exec=/usr/local/bin/antigravity-ide %F
-Icon=/usr/share/pixmaps/antigravity-ide.png
-Type=Application
-StartupNotify=false
-StartupWMClass=Antigravity-ide
-Categories=Development;IDE;TextEditor;
-EOF'
-
-sudo bash -c 'cat << "EOF" > /usr/share/applications/antigravity-web.desktop
-[Desktop Entry]
-Name=Antigravity Web Hub (Puerto 3000)
-Comment=Google Antigravity 2.0 Web UI
-Exec=google-chrome --new-window http://localhost:3000
-Icon=/usr/share/pixmaps/antigravity-ide.png
-Type=Application
-StartupNotify=false
-Categories=Development;IDE;
-EOF'
-
-cp /usr/share/applications/antigravity-ide.desktop "$HOME/Desktop/" 2>/dev/null || true
-chmod +x "$HOME/Desktop/antigravity-ide.desktop" 2>/dev/null || true
-cp /usr/share/applications/antigravity-web.desktop "$HOME/Desktop/" 2>/dev/null || true
-chmod +x "$HOME/Desktop/antigravity-web.desktop" 2>/dev/null || true
 
 # Configurar política de Google Chrome para abrir Antigravity Web Hub por defecto
 sudo mkdir -p /etc/opt/chrome/policies/managed

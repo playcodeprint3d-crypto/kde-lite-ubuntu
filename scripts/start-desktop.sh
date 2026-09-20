@@ -59,6 +59,18 @@ if [ -f "$WP_FILE" ] && command -v kwriteconfig5 >/dev/null 2>&1; then
     done
 fi
 
+# 4b. Limpieza de accesos directos obsoletos de Antigravity
+rm -f "$HOME/Desktop/antigravity"*.desktop 2>/dev/null || true
+sudo rm -f /usr/share/applications/antigravity*.desktop 2>/dev/null || true
+rm -f "$HOME/.local/share/applications/antigravity"*.desktop 2>/dev/null || true
+PLASMA_CFG="$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
+if [ -f "$PLASMA_CFG" ]; then
+    sed -i -E 's|applications:antigravity[^,]*\.desktop,?||g' "$PLASMA_CFG"
+    sed -i -E 's|file:///usr/share/applications/antigravity[^,]*\.desktop,?||g' "$PLASMA_CFG"
+    sed -i -E 's|file:///home/codespace/Desktop/antigravity[^,]*\.desktop,?||g' "$PLASMA_CFG"
+    sed -i 's/launchers=,/launchers=/g; s/,,/,/g; s/,$//g' "$PLASMA_CFG"
+fi
+
 # 5. X11 socket
 sudo mkdir -p /tmp/.X11-unix 2>/dev/null || true
 sudo chmod 1777 /tmp/.X11-unix 2>/dev/null || true
