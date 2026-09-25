@@ -397,7 +397,7 @@ function playcode_cs_ajax_get_status() {
 	}
 
 	$codespaces   = isset( $cs_response['codespaces'] ) ? $cs_response['codespaces'] : array();
-	$default_repo = get_option( 'playcode_cs_default_repo', 'portadordelsello-stack/linux-kde-lite' );
+	$default_repo = get_option( 'playcode_cs_default_repo', 'playcodeprint3d-crypto/kde-lite-ubuntu' );
 
 	$target_codespace = null;
 
@@ -438,7 +438,7 @@ function playcode_cs_ajax_create() {
 		wp_send_json_error( 'No autorizado' );
 	}
 
-	$default_repo = get_option( 'playcode_cs_default_repo', 'portadordelsello-stack/linux-kde-lite' );
+	$default_repo = get_option( 'playcode_cs_default_repo', 'playcodeprint3d-crypto/kde-lite-ubuntu' );
 	$repo_info    = playcode_cs_api_request( "/repos/{$default_repo}", $token );
 
 	if ( empty( $repo_info['id'] ) ) {
@@ -693,7 +693,7 @@ function playcode_codespaces_render_dashboard() {
 	$is_connected = ! empty( $token );
 
 	$client_id    = get_option( 'playcode_cs_client_id', '' );
-	$default_repo = get_option( 'playcode_cs_default_repo', 'portadordelsello-stack/linux-kde-lite' );
+	$default_repo = get_option( 'playcode_cs_default_repo', 'playcodeprint3d-crypto/kde-lite-ubuntu' );
 	$create_url   = "https://codespaces.new/{$default_repo}";
 
 	// GitHub OAuth URL
@@ -944,7 +944,7 @@ function playcode_codespaces_render_build_dashboard() {
 	$is_connected = ! empty( $token );
 
 	$client_id    = get_option( 'playcode_cs_client_id', '' );
-	$default_repo = get_option( 'playcode_cs_default_repo', 'portadordelsello-stack/linux-kde-lite' );
+	$default_repo = get_option( 'playcode_cs_default_repo', 'playcodeprint3d-crypto/kde-lite-ubuntu' );
 	$create_url   = "https://codespaces.new/{$default_repo}";
 	$codespace_url = playcode_cs_get_account_base_url() . 'codespace/';
 
@@ -1214,7 +1214,7 @@ function playcode_cs_render_admin_settings() {
 
 	$client_id     = get_option( 'playcode_cs_client_id', '' );
 	$client_secret = get_option( 'playcode_cs_client_secret', '' );
-	$default_repo  = get_option( 'playcode_cs_default_repo', 'portadordelsello-stack/linux-kde-lite' );
+	$default_repo  = get_option( 'playcode_cs_default_repo', 'playcodeprint3d-crypto/kde-lite-ubuntu' );
 	$callback_url  = home_url( '/?playcode_gh_callback=1' );
 	?>
 	<div class="wrap" style="max-width:800px;">
@@ -1241,7 +1241,7 @@ function playcode_cs_render_admin_settings() {
 					<th scope="row"><label for="playcode_cs_default_repo">Repositorio Predeterminado</label></th>
 					<td>
 						<input type="text" name="playcode_cs_default_repo" id="playcode_cs_default_repo" value="<?php echo esc_attr( $default_repo ); ?>" class="regular-text" />
-						<p class="description">Repositorio que contiene la imagen de Linux (ej: <code>portadordelsello-stack/linux-kde-lite</code>).</p>
+						<p class="description">Repositorio que contiene la imagen de Linux (ej: <code>playcodeprint3d-crypto/kde-lite-ubuntu</code>).</p>
 					</td>
 				</tr>
 				<tr>
@@ -1260,3 +1260,4 @@ function playcode_cs_render_admin_settings() {
 	</div>
 	<?php
 }
+

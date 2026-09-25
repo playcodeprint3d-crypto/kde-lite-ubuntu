@@ -548,7 +548,7 @@
 						if (err || !response || !response.success) {
 							hideLoadingState();
 							alert(response ? response.data : 'Iniciando creación en GitHub...');
-							window.open('https://codespaces.new/portadordelsello-stack/linux-kde-lite', '_blank');
+							window.open('https://codespaces.new/playcodeprint3d-crypto/kde-lite-ubuntu', '_blank');
 							return;
 						}
 						if (response.data && response.data.name) {
@@ -717,3 +717,4 @@
 	});
 
 })();
+
