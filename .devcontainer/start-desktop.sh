@@ -80,14 +80,17 @@ echo "[*] Limpiando procesos previos de VNC y websockify..."
 # Matar VNC servers de forma limpia primero
 vncserver -kill :1 2>/dev/null || true
 vncserver -kill :2 2>/dev/null || true
+vncserver -kill :3 2>/dev/null || true
 sleep 1
 # Matar procesos residuales por si vncserver -kill no alcanzó
 pkill -f "Xtigervnc.*:1" 2>/dev/null || true
 pkill -f "Xtigervnc.*:2" 2>/dev/null || true
+pkill -f "Xtigervnc.*:3" 2>/dev/null || true
 # Matar websockify en los puertos que usaremos
 pkill -f "websockify.*8080" 2>/dev/null || true
 pkill -f "websockify.*6080" 2>/dev/null || true
 pkill -f "websockify.*4000" 2>/dev/null || true
+pkill -f "websockify.*5000" 2>/dev/null || true
 sleep 1
 
 # 6. TigerVNC :1 â†’ KDE â†’ 8080 + 6080
@@ -160,6 +163,70 @@ if ! ss -tlpn 2>/dev/null | grep -q ':4000'; then
     websockify -D --web /usr/share/novnc 4000 localhost:5902 2>/dev/null || true
 fi
 
+# 7b. TigerVNC :3 -> Landing Page Play Code Laboratorio IA (Google AI Studio) -> 5000
+if [ ! -f "$HOME/Documents/landing-laboratorio-ia.html" ]; then
+    mkdir -p "$HOME/Documents" "$HOME/Documentos" 2>/dev/null || true
+    if [ -f "$WS_DIR/assets/landing-laboratorio-ia.html" ]; then
+        cp -f "$WS_DIR/assets/landing-laboratorio-ia.html" "$HOME/Documents/landing-laboratorio-ia.html" 2>/dev/null || true
+        cp -f "$WS_DIR/assets/landing-laboratorio-ia.html" "$HOME/Documentos/landing-laboratorio-ia.html" 2>/dev/null || true
+    fi
+fi
+
+if [ ! -f "$HOME/.vnc/xstartup-landing" ]; then
+    mkdir -p "$HOME/.vnc" 2>/dev/null || true
+    cat > "$HOME/.vnc/xstartup-landing" << 'XLANDING'
+#!/bin/bash
+unset SESSION_MANAGER DBUS_SESSION_BUS_ADDRESS
+export DISPLAY=":3"
+export XDG_CURRENT_DESKTOP=Openbox
+export XDG_RUNTIME_DIR="/tmp/runtime-${USER:-codespace}"
+mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
+chmod 0700 "$XDG_RUNTIME_DIR" 2>/dev/null || true
+
+command -v autocutsel >/dev/null 2>&1 && { autocutsel -fork 2>/dev/null; autocutsel -selection CLIPBOARD -fork 2>/dev/null; } || true
+command -v openbox >/dev/null 2>&1 && openbox &
+sleep 1
+
+LANDING_PAGE="file:///home/codespace/Documents/landing-laboratorio-ia.html"
+
+while true; do
+    google-chrome \
+        --no-sandbox \
+        --disable-gpu \
+        --disable-dev-shm-usage \
+        --no-first-run \
+        --no-default-browser-check \
+        --disable-session-crashed-bubble \
+        --disable-infobars \
+        --start-maximized \
+        --app="$LANDING_PAGE"
+    sleep 2
+done
+XLANDING
+    chmod +x "$HOME/.vnc/xstartup-landing" 2>/dev/null || true
+fi
+
+rm -f /tmp/.X3-lock /tmp/.X11-unix/X3 2>/dev/null || true
+sudo rm -f /tmp/.X3-lock /tmp/.X11-unix/X3 2>/dev/null || true
+
+if [ -x "$HOME/.vnc/xstartup-landing" ]; then
+    echo "[+] Iniciando TigerVNC :3 (Play Code Laboratorio IA / Google AI Studio)..."
+    vncserver :3 -geometry 1366x768 -depth 24 -localhost yes -SecurityTypes None \
+        -cleanstale -noreset -xstartup "$HOME/.vnc/xstartup-landing" \
+        </dev/null >>"$LOG_DIR/vncserver-landing.log" 2>&1 || true
+
+    for i in $(seq 1 20); do
+        ss -tlpn 2>/dev/null | grep -q ':5903' && break
+        sleep 1
+    done
+
+    if ! ss -tlpn 2>/dev/null | grep -q ':5000'; then
+        echo "[+] websockify puerto 5000 (Play Code Laboratorio IA)"
+        websockify -D --web /usr/share/novnc 5000 localhost:5903 2>/dev/null || true
+    fi
+fi
+
+
 # 8. ttyd â†’ puerto 3000
 sudo tee /usr/local/bin/agy-web-session >/dev/null << 'SESSION'
 #!/usr/bin/env bash
@@ -228,9 +295,10 @@ fi
 CS="${CODESPACE_NAME:-codespace}"
 echo "=========================================================="
 echo " [!] Listo! URLs de acceso:"
-echo "  * KDE     : https://${CS}-8080.app.github.dev/vnc.html"
-echo "  * Antigrav: https://${CS}-4000.app.github.dev/vnc.html"
-echo "  * CLI     : https://${CS}-3000.app.github.dev/"
+echo "  * KDE       : https://${CS}-8080.app.github.dev/vnc.html"
+echo "  * Antigrav  : https://${CS}-4000.app.github.dev/vnc.html"
+echo "  * AI Studio : https://${CS}-5000.app.github.dev/vnc.html"
+echo "  * CLI       : https://${CS}-3000.app.github.dev/"
 echo "=========================================================="
 
 # 10. Panel de Control de Servicios (service-control.py — puerto 9000)
@@ -239,7 +307,7 @@ if [ -f "$SERVICE_CTRL" ]; then
     pkill -f "service-control.py" 2>/dev/null || true
     sleep 1
     # Al arrancar, limpiar flags .disabled — todo debe encenderse limpio
-    rm -f /tmp/.service-kde.disabled /tmp/.service-ide.disabled /tmp/.service-cli.disabled 2>/dev/null || true
+    rm -f /tmp/.service-kde.disabled /tmp/.service-ide.disabled /tmp/.service-aistudio.disabled /tmp/.service-cli.disabled 2>/dev/null || true
     echo "[+] Iniciando Panel de Control API (puerto 9000)..."
     setsid nohup python3 "$SERVICE_CTRL" >> "$LOG_DIR/service-control.log" 2>&1 &
 fi

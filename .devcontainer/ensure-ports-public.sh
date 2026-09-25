@@ -9,7 +9,7 @@ set -euo pipefail
 # PÚBLICA, incluso si el usuario desconecta o cierra la interfaz de VS Code.
 # =============================================================================
 
-TARGET_PORTS=(8080 6080 3000 4000)
+TARGET_PORTS=(8080 6080 3000 4000 5000)
 DAEMON_PID_FILE="/tmp/.ensure-ports-public-daemon.pid"
 LOG_DIR="${HOME:-/home/codespace}/.vnc"
 mkdir -p "$LOG_DIR" 2>/dev/null || true
@@ -100,6 +100,22 @@ supervise_services() {
         # 6. websockify en puerto 4000
         if ! ss -tlpn 2>/dev/null | grep -E "(:4000\s)" >/dev/null 2>&1; then
             start_websockify 4000 5902
+            restarted=true
+        fi
+    fi
+
+    # 7. TigerVNC en :3 para Google AI Studio (puerto 5903)
+    if [ ! -f "/tmp/.service-aistudio.disabled" ]; then
+        if ! ss -tlpn 2>/dev/null | grep -E "(:5903\s)" >/dev/null 2>&1; then
+            if [ -x "${HOME:-/home/codespace}/.vnc/xstartup-landing" ]; then
+                setsid nohup vncserver :3 -geometry 1366x768 -depth 24 -localhost yes -SecurityTypes None -cleanstale -noreset -xstartup "${HOME:-/home/codespace}/.vnc/xstartup-landing" </dev/null >> "${LOG_DIR}/vncserver-landing.log" 2>&1 || true
+                restarted=true
+            fi
+        fi
+
+        # 8. websockify en puerto 5000
+        if ! ss -tlpn 2>/dev/null | grep -E "(:5000\s)" >/dev/null 2>&1; then
+            start_websockify 5000 5903
             restarted=true
         fi
     fi

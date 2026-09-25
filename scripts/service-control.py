@@ -41,6 +41,11 @@ SERVICES = {
         "check_ports": [5902, 4000],
         "primary_port": 5902,
     },
+    "aistudio": {
+        "label": "Google AI Studio",
+        "check_ports": [5903, 5000],
+        "primary_port": 5903,
+    },
     "cli": {
         "label": "Terminal CLI (ttyd)",
         "check_ports": [3000],
@@ -119,11 +124,18 @@ def stop_ide():
     run("pkill -f 'websockify.*4000' 2>/dev/null")
 
 
+def stop_aistudio():
+    run("vncserver -kill :3 2>/dev/null")
+    run("sleep 1")
+    run("pkill -f 'Xtigervnc.*:3' 2>/dev/null")
+    run("pkill -f 'websockify.*5000' 2>/dev/null")
+
+
 def stop_cli():
     run("pkill -f 'ttyd.*3000' 2>/dev/null")
 
 
-STOP_HANDLERS = {"kde": stop_kde, "ide": stop_ide, "cli": stop_cli}
+STOP_HANDLERS = {"kde": stop_kde, "ide": stop_ide, "aistudio": stop_aistudio, "cli": stop_cli}
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -178,6 +190,31 @@ def start_ide():
         )
 
 
+def start_aistudio():
+    run("rm -f /tmp/.X3-lock /tmp/.X11-unix/X3 2>/dev/null")
+    run("sudo rm -f /tmp/.X3-lock /tmp/.X11-unix/X3 2>/dev/null")
+    xstartup = os.path.join(HOME, ".vnc", "xstartup-landing")
+    if not os.path.exists(xstartup):
+        ws = get_workspaces_dir()
+        run(f"bash {ws}/scripts/start-desktop.sh 2>/dev/null &")
+        return
+    log = os.path.join(VNC_LOG_DIR, "vncserver-landing.log")
+    run(
+        f"setsid nohup vncserver :3 -geometry 1366x768 -depth 24 "
+        f"-localhost yes -SecurityTypes None -cleanstale -noreset "
+        f"-xstartup {xstartup} </dev/null >>{log} 2>&1 &"
+    )
+    for _ in range(20):
+        if port_is_listening(5903):
+            break
+        run("sleep 1")
+    if not port_is_listening(5000):
+        run(
+            "websockify -D --web /usr/share/novnc 5000 "
+            "localhost:5903 2>/dev/null"
+        )
+
+
 def start_cli():
     ws = get_workspaces_dir()
     log = os.path.join(VNC_LOG_DIR, "ttyd.log")
@@ -198,7 +235,7 @@ def start_cli():
         run("sleep 1")
 
 
-START_HANDLERS = {"kde": start_kde, "ide": start_ide, "cli": start_cli}
+START_HANDLERS = {"kde": start_kde, "ide": start_ide, "aistudio": start_aistudio, "cli": start_cli}
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -240,7 +277,7 @@ class ServiceControlHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         # Espera: /service/{name}/{action}
-        match = re.fullmatch(r"/service/(kde|ide|cli)/(start|stop)", parsed.path)
+        match = re.fullmatch(r"/service/(kde|ide|aistudio|cli)/(start|stop)", parsed.path)
         if not match:
             self.send_json(404, {"ok": False, "error": "Unknown endpoint"})
             return

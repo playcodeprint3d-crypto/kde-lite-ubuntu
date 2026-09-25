@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Plugin Name: Play Code - Cloud Codespaces & Linux Desktop
  * Description: Conector oficial de GitHub Codespaces para MasterStudy LMS. Permite a los alumnos conectar su cuenta de GitHub, encender su máquina virtual y acceder a su escritorio Linux KDE en la nube.
@@ -53,6 +53,11 @@ function playcode_cs_register_custom_routes( $routes ) {
 			'protected' => true,
 			'url'       => 'build',
 		);
+		$routes['user_url']['sub_pages']['aistudio_custom'] = array(
+			'template'  => 'account/aistudio-custom',
+			'protected' => true,
+			'url'       => 'aistudio',
+		);
 	}
 	return $routes;
 }
@@ -65,6 +70,7 @@ function playcode_cs_section_labels( $labels ) {
 	}
 	$labels['codespace'] = 'Laboratorio';
 	unset( $labels['build'] );
+	unset( $labels['aistudio'] );
 	return $labels;
 }
 
@@ -102,6 +108,7 @@ function playcode_cs_add_menu_items( $items ) {
 
 	$has_codespace = false;
 	$has_build     = false;
+	$has_aistudio  = false;
 
 	foreach ( $items as &$item ) {
 		if ( isset( $item['slug'] ) && 'codespace' === $item['slug'] ) {
@@ -117,6 +124,13 @@ function playcode_cs_add_menu_items( $items ) {
 			$item['section']    = 'codespace';
 			$item['order']      = 15;
 			$has_build          = true;
+		}
+		if ( isset( $item['slug'] ) && 'aistudio' === $item['slug'] ) {
+			$item['menu_title'] = 'Google AI Studio';
+			$item['title']      = 'Google AI Studio';
+			$item['section']    = 'codespace';
+			$item['order']      = 20;
+			$has_aistudio       = true;
 		}
 	}
 	unset( $item );
@@ -157,6 +171,24 @@ function playcode_cs_add_menu_items( $items ) {
 		);
 	}
 
+	// 3. Google AI Studio item (in 'Laboratorio' section)
+	if ( ! $has_aistudio ) {
+		$items[] = array(
+			'id'           => 'aistudio_custom',
+			'slug'         => 'aistudio',
+			'menu_title'   => 'Google AI Studio',
+			'title'        => 'Google AI Studio',
+			'menu_icon'    => 'fa-brain',
+			'icon'         => 'fa-brain',
+			'badge'        => 'AI',
+			'menu_url'     => $user_url . 'aistudio/',
+			'menu_place'   => 'learning',
+			'section'      => 'codespace',
+			'order'        => 20,
+			'user_profile' => true,
+		);
+	}
+
 	return $items;
 }
 
@@ -164,7 +196,8 @@ function playcode_cs_add_menu_items( $items ) {
 add_filter( 'stm_lms_template_file', 'playcode_cs_override_template_file', 9999, 2 );
 function playcode_cs_override_template_file( $path, $template_name ) {
 	if ( false !== strpos( $template_name, 'codespace-custom' ) ||
-	     false !== strpos( $template_name, 'build-custom' ) ) {
+	     false !== strpos( $template_name, 'build-custom' ) ||
+	     false !== strpos( $template_name, 'aistudio-custom' ) ) {
 		return PLAYCODE_CODESPACES_PATH . 'templates_override';
 	}
 	return $path;
@@ -209,6 +242,24 @@ function playcode_cs_icon_styles() {
 		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item_active i.fa-rocket,
 		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item.masterstudy-account-menu__list-item_active i.fa-rocket {
 			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z'/%3E%3Cpath d='m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z'/%3E%3Cpath d='M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0'/%3E%3Cpath d='M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5'/%3E%3C/svg%3E") !important;
+		}
+
+		/* --- fa-brain (Google AI Studio) --- */
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item i.fa-brain {
+			font-size: 0 !important;
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23001F4A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04'/%3E%3Cpath d='M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04'/%3E%3C/svg%3E") !important;
+			width: 18px !important;
+			height: 18px !important;
+			display: inline-block !important;
+			background-size: contain !important;
+			background-repeat: no-repeat !important;
+			background-position: center !important;
+			vertical-align: middle !important;
+		}
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item:hover i.fa-brain,
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item_active i.fa-brain,
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item.masterstudy-account-menu__list-item_active i.fa-brain {
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04'/%3E%3Cpath d='M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04'/%3E%3C/svg%3E") !important;
 		}
 	</style>
 	<?php
@@ -620,7 +671,7 @@ function playcode_service_toggle_handler() {
 	$service = isset( $_POST['service'] ) ? sanitize_key( $_POST['service'] ) : '';
 	$action  = isset( $_POST['action'] )  ? sanitize_key( $_POST['action'] )  : '';
 
-	if ( ! in_array( $service, array( 'kde', 'ide', 'cli' ), true ) ) {
+	if ( ! in_array( $service, array( 'kde', 'ide', 'aistudio', 'cli' ), true ) ) {
 		wp_send_json_error( 'Servicio inválido' );
 	}
 	if ( ! in_array( $action, array( 'start', 'stop' ), true ) ) {
@@ -893,6 +944,23 @@ function playcode_codespaces_render_dashboard() {
 							<span class="playcode-cs-service-status" id="playcode-svc-ide-status">&mdash;</span>
 							<label class="playcode-cs-switch">
 								<input type="checkbox" id="playcode-svc-ide-toggle" checked disabled>
+								<span class="playcode-cs-slider"></span>
+							</label>
+						</div>
+					</div>
+					<!-- Google AI Studio -->
+					<div class="playcode-cs-service-row" id="playcode-svc-aistudio-row">
+						<div class="playcode-cs-service-info">
+							<span class="playcode-cs-service-icon">&#129504;</span>
+							<div>
+								<strong class="playcode-cs-service-name">Google AI Studio (Chrome)</strong>
+								<span class="playcode-cs-service-ram">~1.2 GB RAM &middot; Puerto 5000</span>
+							</div>
+						</div>
+						<div class="playcode-cs-service-ctrl">
+							<span class="playcode-cs-service-status" id="playcode-svc-aistudio-status">&mdash;</span>
+							<label class="playcode-cs-switch">
+								<input type="checkbox" id="playcode-svc-aistudio-toggle" checked disabled>
 								<span class="playcode-cs-slider"></span>
 							</label>
 						</div>
@@ -1177,6 +1245,178 @@ function playcode_codespaces_render_build_dashboard() {
 								<input type="checkbox" id="playcode-svc-cli-toggle" checked disabled>
 								<span class="playcode-cs-slider"></span>
 							</label>
+						</div>
+					</div>
+				</div>
+
+			<?php endif; ?>
+
+		</div>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
+/* ==========================================================================
+   5.3. DASHBOARD RENDERER — "GOOGLE AI STUDIO" TAB
+   ========================================================================== */
+
+add_shortcode( 'playcode_aistudio', 'playcode_codespaces_render_aistudio_dashboard' );
+
+function playcode_codespaces_render_aistudio_dashboard() {
+	if ( ! is_user_logged_in() ) {
+		return '<div class="playcode-cs-card" style="text-align:center; color:#EF4444; font-weight:800;">Debes iniciar sesión para acceder al entorno de Google AI Studio.</div>';
+	}
+
+	wp_enqueue_style( 'playcode-cs-dashboard-css' );
+	wp_enqueue_script( 'playcode-cs-dashboard-js' );
+
+	$user_id      = get_current_user_id();
+	$token        = get_user_meta( $user_id, 'playcode_github_token', true );
+	$gh_user      = get_user_meta( $user_id, 'playcode_github_user', true );
+	$is_connected = ! empty( $token );
+
+	$client_id    = get_option( 'playcode_cs_client_id', '' );
+	$default_repo = get_option( 'playcode_cs_default_repo', 'playcodeprint3d-crypto/kde-lite-ubuntu' );
+	$create_url   = "https://codespaces.new/{$default_repo}";
+	$codespace_url = playcode_cs_get_account_base_url() . 'codespace/';
+
+	$oauth_url = '#';
+	if ( ! empty( $client_id ) ) {
+		$oauth_url = add_query_arg( array(
+			'client_id' => $client_id,
+			'scope'     => 'codespace,read:user',
+			'state'     => wp_create_nonce( 'playcode_gh_oauth' ),
+		), 'https://github.com/login/oauth/authorize' );
+	}
+
+	ob_start();
+	?>
+	<div class="playcode-cs-wrapper" id="playcode-cs-aistudio-app" data-view="aistudio" data-connected="<?php echo $is_connected ? '1' : '0'; ?>">
+
+		<!-- Header Card -->
+		<div class="playcode-cs-card">
+			<div class="playcode-cs-header">
+				<div>
+					<h2 class="playcode-cs-title">
+						🧠 Google AI Studio — Consola Oficial Gemini
+					</h2>
+					<p style="margin: 5px 0 0 0; font-size: 13px; color: #64748B; font-weight: 600;">
+						Sesión dedicada de experimentación con Google Chrome y modelos Gemini (Puerto 5000)
+					</p>
+				</div>
+				<span id="playcode-cs-aistudio-state-badge" class="playcode-cs-badge <?php echo $is_connected ? 'badge-blue' : 'badge-gray'; ?>">
+					<?php echo $is_connected ? '<span class="playcode-cs-dot dot-gray"></span> Verificando...' : 'Desconectado'; ?>
+				</span>
+			</div>
+
+			<!-- Error Alert -->
+			<div id="playcode-cs-aistudio-error-alert" class="playcode-cs-notice" style="background:#FEE2E2; color:#991B1B; border-color:#EF4444; display:none;"></div>
+
+			<!-- Transient Loading / Progress Indicator -->
+			<div id="playcode-cs-aistudio-loading-bar" class="playcode-cs-notice" style="display:none; background:#EFF6FF; color:#1E40AF; border-color:#3B82F6;">
+				<span class="playcode-spinner"></span>
+				<span class="playcode-cs-loading-text">Cargando sesión de Google AI Studio...</span>
+			</div>
+
+			<!-- Transient Status Alert -->
+			<div id="playcode-cs-aistudio-transient-alert" class="playcode-cs-notice" style="display:none;"></div>
+
+			<?php if ( ! $is_connected ) : ?>
+				<!-- STATE 1: NOT CONNECTED -->
+				<div style="padding: 10px 0;">
+					<p style="font-size: 15px; font-weight: 600; line-height: 1.6; margin-bottom: 20px;">
+						Para utilizar la sesión interactiva de Google AI Studio en tu máquina virtual de la nube, primero debes conectar tu cuenta de GitHub.
+					</p>
+
+					<div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 25px;">
+						<?php if ( ! empty( $client_id ) ) : ?>
+							<a href="<?php echo esc_url( $oauth_url ); ?>" class="playcode-btn playcode-btn-dark">
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+								Conectar con GitHub Oficial
+							</a>
+						<?php endif; ?>
+
+						<button type="button" id="playcode-cs-aistudio-toggle-token" class="playcode-btn playcode-btn-outline">
+							🔑 Conectar mediante Token (PAT)
+						</button>
+					</div>
+
+					<div id="playcode-cs-aistudio-manual-token-panel" style="<?php echo empty( $client_id ) ? 'display:block;' : 'display:none;'; ?> background:#F8FAFC; border:1.5px solid #001F4A; padding:20px; margin-top:15px;">
+						<h4 style="margin:0 0 10px 0; font-size:14px; font-weight:800;">Conexión mediante Personal Access Token:</h4>
+						<form id="playcode-cs-aistudio-token-form" style="display:flex; gap:10px; flex-wrap:wrap;">
+							<input type="password" id="playcode-cs-aistudio-token-input" class="playcode-cs-input" style="flex:1; min-width:250px;" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" required />
+							<button type="submit" class="playcode-btn playcode-btn-primary">Validar y Conectar</button>
+						</form>
+					</div>
+				</div>
+
+			<?php else : ?>
+				<!-- STATE 2: CONNECTED -->
+				<div class="playcode-cs-user-bar">
+					<div class="playcode-cs-user-info">
+						<img id="playcode-cs-aistudio-user-avatar" class="playcode-cs-avatar" src="<?php echo ! empty( $gh_user['avatar_url'] ) ? esc_url( $gh_user['avatar_url'] ) : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'; ?>" alt="Avatar" />
+						<div>
+							<h4 class="playcode-cs-user-name"><?php echo ! empty( $gh_user['name'] ) ? esc_html( $gh_user['name'] ) : 'Usuario GitHub'; ?></h4>
+							<span id="playcode-cs-aistudio-user-login" class="playcode-cs-user-login">@<?php echo ! empty( $gh_user['login'] ) ? esc_html( $gh_user['login'] ) : 'conectado'; ?></span>
+						</div>
+					</div>
+					<div style="display:flex; gap:10px; align-items:center;">
+						<button type="button" id="playcode-cs-aistudio-btn-refresh" class="playcode-btn playcode-btn-outline playcode-btn-sm" title="Actualizar estado">
+							🔄 Actualizar
+						</button>
+						<button type="button" id="playcode-cs-aistudio-btn-disconnect" class="playcode-btn playcode-btn-danger playcode-btn-sm">
+							Desconectar
+						</button>
+					</div>
+				</div>
+
+				<!-- Case A: No Codespace Found -->
+				<div id="playcode-cs-aistudio-no-codespace" style="display:none; text-align:center; padding:30px 10px;">
+					<h3 style="font-size:18px; font-weight:800; margin-bottom:10px;">Aún no tienes un entorno creado</h3>
+					<p style="font-size:14px; color:#64748B; max-width:550px; margin:0 auto 20px auto;">
+						Crea tu máquina virtual en GitHub Codespaces (incluye Linux Desktop, Antigravity AI y Google AI Studio):
+					</p>
+					<div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+						<button type="button" id="playcode-cs-aistudio-btn-create" class="playcode-btn playcode-btn-primary" style="font-size:15px;">
+							🚀 Crear mi Entorno en la Nube (1 Clic)
+						</button>
+						<a href="<?php echo esc_url( $create_url ); ?>" target="_blank" class="playcode-btn playcode-btn-outline" style="font-size:15px;">
+							↗️ Abrir en GitHub
+						</a>
+					</div>
+				</div>
+
+				<!-- Case B: Codespace Found — Actions Bar -->
+				<div id="playcode-cs-aistudio-details" style="display:none;">
+					<!-- Actions Bar -->
+					<div class="playcode-cs-actions" style="margin-bottom:15px;">
+						<!-- Start Button (if stopped) -->
+						<button type="button" id="playcode-cs-aistudio-btn-start" class="playcode-btn playcode-btn-primary" style="display:none;">
+							⚡ Encender mi Entorno
+						</button>
+
+						<!-- Primary: Ir a AI Studio (only when machine is running) -->
+						<a href="#" id="playcode-cs-btn-go-aistudio" target="_blank" class="playcode-btn playcode-btn-primary" style="display:none; font-size:15px; font-weight:900;">
+							🚀 Ir a AI Studio
+						</a>
+
+						<!-- Link to Linux Desktop tab -->
+						<a href="<?php echo esc_url( $codespace_url ); ?>" class="playcode-btn playcode-btn-outline">
+							🖥️ Ir a Máquina Virtual Linux
+						</a>
+
+						<!-- Stop Button -->
+						<button type="button" id="playcode-cs-aistudio-btn-stop" class="playcode-btn playcode-btn-outline" style="display:none;">
+							🛑 Apagar Entorno
+						</button>
+					</div>
+
+					<!-- Tip Box -->
+					<div class="playcode-cs-notice" style="background:#EFF6FF; border-color:#3B82F6; color:#1E40AF;">
+						<span style="font-size:18px;">💡</span>
+						<div>
+							<strong>Acceso a Google AI Studio:</strong> Al presionar <strong>Ir a AI Studio</strong>, se abrirá tu sesión dedicada en una pestaña nueva con Google Chrome y la consola oficial de Gemini. Puedes iniciar sesión con tu cuenta de Google y utilizar todas las herramientas de Inteligencia Artificial.
 						</div>
 					</div>
 				</div>

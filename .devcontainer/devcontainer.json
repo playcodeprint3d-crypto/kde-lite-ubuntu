@@ -9,7 +9,7 @@
     "memory": "8gb",
     "storage": "32gb"
   },
-  "forwardPorts": [8080, 6080, 3000, 4000, 9000],
+  "forwardPorts": [8080, 6080, 3000, 4000, 5000, 9000],
   "portsAttributes": {
     "8080": {
       "label": "KDE Desktop (noVNC)",
@@ -28,6 +28,11 @@
     },
     "4000": {
       "label": "Antigravity 2.0 (AI Platform)",
+      "onAutoForward": "silent",
+      "visibility": "public"
+    },
+    "5000": {
+      "label": "Play Code Laboratorio IA (Google AI Studio)",
       "onAutoForward": "silent",
       "visibility": "public"
     },

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Play Code - Codespaces, Linux Desktop & Antigravity AI Dashboard Script
  * Version: 1.2.0
  *
@@ -15,6 +15,9 @@
 		}
 		if (document.getElementById('playcode-cs-build-app')) {
 			initView('build', 'playcode-cs-build-');
+		}
+		if (document.getElementById('playcode-cs-aistudio-app')) {
+			initView('aistudio', 'playcode-cs-aistudio-');
 		}
 	});
 
@@ -317,6 +320,13 @@
 					btnInvokeAgy.classList.remove('is-disabled');
 				}
 
+				// AI Studio: show "Ir a AI Studio" button when machine is running
+				const btnGoAIStudio = document.getElementById('playcode-cs-btn-go-aistudio');
+				if (btnGoAIStudio && currentCodespace) {
+					btnGoAIStudio.style.display = 'inline-flex';
+					btnGoAIStudio.href = `https://${currentCodespace.name}-5000.app.github.dev/vnc.html?autoconnect=true&resize=remote`;
+				}
+
 			} else if (isTransientState(s)) {
 				if (badge) {
 					badge.className = 'playcode-cs-badge badge-yellow';
@@ -324,11 +334,21 @@
 				}
 				if (btnStart) btnStart.style.display = 'none';
 				if (btnStop)  btnStop.style.display  = 'none';
+
+				const btnGoAIStudio = document.getElementById('playcode-cs-btn-go-aistudio');
+				if (btnGoAIStudio) {
+					btnGoAIStudio.style.display = 'none';
+				}
+
 				if (transientAlert) {
 					transientAlert.style.display = 'block';
-					transientAlert.innerHTML = viewType === 'build'
-						? '<strong>⏳ Tu entorno de Build se está iniciando...</strong> Esto toma entre 10 y 20 segundos. Antigravity cargará automáticamente cuando esté listo.'
-						: '<strong>⏳ Tu máquina virtual se está levantando...</strong> Se está configurando el escritorio KDE Plasma. El botón se habilitará automáticamente al finalizar el segundero.';
+					let transMsg = '<strong>⏳ Tu máquina virtual se está levantando...</strong> Se está configurando el escritorio KDE Plasma. El botón se habilitará automáticamente al finalizar el segundero.';
+					if (viewType === 'build') {
+						transMsg = '<strong>⏳ Tu entorno de Build se está iniciando...</strong> Esto toma entre 10 y 20 segundos. Antigravity cargará automáticamente cuando esté listo.';
+					} else if (viewType === 'aistudio') {
+						transMsg = '<strong>⏳ Tu máquina virtual se está levantando...</strong> Esto toma unos segundos. El botón "Ir a AI Studio" se activará cuando esté lista.';
+					}
+					transientAlert.innerHTML = transMsg;
 				}
 				const btnOpenDesktop = $('btn-open-desktop');
 				if (btnOpenDesktop) {
@@ -352,6 +372,11 @@
 				if (btnStart) btnStart.style.display = 'inline-flex';
 				if (btnStop)  btnStop.style.display  = 'none';
 				if (transientAlert) transientAlert.style.display = 'none';
+
+				const btnGoAIStudio = document.getElementById('playcode-cs-btn-go-aistudio');
+				if (btnGoAIStudio) {
+					btnGoAIStudio.style.display = 'none';
+				}
 
 				const btnOpenDesktop = $('btn-open-desktop');
 				if (btnOpenDesktop) {
@@ -634,7 +659,7 @@
 			if (!panel || !currentCodespace) return;
 			panel.style.display = 'block';
 			// Habilitar toggles y actualizar estado
-			['kde', 'ide', 'cli'].forEach(function(name) {
+			['kde', 'ide', 'aistudio', 'cli'].forEach(function(name) {
 				const toggle = document.getElementById('playcode-svc-' + name + '-toggle');
 				if (toggle) toggle.disabled = false;
 			});
@@ -645,9 +670,10 @@
 		function refreshServiceStatus() {
 			postAjax('playcode_service_status', {}, function(err, res) {
 				if (err || !res || !res.success) return;
-				const s = res.data; // { kde: 'running'|'stopped', ide: ..., cli: ... }
+				const s = res.data; // { kde: 'running'|'stopped', ide: ..., aistudio: ..., cli: ... }
 				updateServiceToggle('kde', s.kde === 'running');
 				updateServiceToggle('ide', s.ide === 'running');
+				updateServiceToggle('aistudio', s.aistudio === 'running');
 				updateServiceToggle('cli', s.cli === 'running');
 			});
 		}
@@ -669,7 +695,7 @@
 			if (servicePanelBound) return;
 			servicePanelBound = true;
 
-			['kde', 'ide', 'cli'].forEach(function(name) {
+			['kde', 'ide', 'aistudio', 'cli'].forEach(function(name) {
 				const toggle = document.getElementById('playcode-svc-' + name + '-toggle');
 				if (!toggle) return;
 				toggle.addEventListener('change', function() {
