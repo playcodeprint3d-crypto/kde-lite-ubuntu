@@ -885,6 +885,21 @@ function playcode_codespaces_render_dashboard() {
 							🌐 Abrir Máquina Virtual Linux (KDE)
 						</a>
 
+						<!-- Open Antigravity IDE Button (Available) -->
+						<a href="#" id="playcode-cs-btn-open-ide" target="_blank" class="playcode-btn playcode-btn-primary" style="display:none; font-weight:800;">
+							💻 Antigravity IDE (Puerto 4000)
+						</a>
+
+						<!-- Open CLI Terminal Button (Available) -->
+						<a href="#" id="playcode-cs-btn-open-cli" target="_blank" class="playcode-btn playcode-btn-dark" style="display:none; font-weight:800;">
+							⚡ Terminal CLI (Puerto 3000)
+						</a>
+
+						<!-- Open AI Studio Button (Available) -->
+						<a href="#" id="playcode-cs-btn-open-aistudio" target="_blank" class="playcode-btn playcode-btn-outline" style="display:none; font-weight:800;">
+							🧠 Google AI Studio (Puerto 5000)
+						</a>
+
 						<!-- Open VS Code Web -->
 						<a href="#" id="playcode-cs-btn-open-vscode" target="_blank" class="playcode-btn playcode-btn-dark">
 							📁 Abrir en VS Code Web
@@ -1131,9 +1146,19 @@ function playcode_codespaces_render_build_dashboard() {
 							⚡ Encender mi Entorno
 						</button>
 
-						<!-- Primary: Invoke Antigravity -->
-						<button type="button" id="playcode-cs-btn-invoke-agy" class="playcode-btn playcode-btn-primary" style="font-size:15px; font-weight:900;">
-							🚀 Invocar a Antigravity
+						<!-- Primary: Ir a Antigravity CLI (only when machine is running) -->
+						<a href="#" id="playcode-cs-btn-go-antigravity" target="_blank" class="playcode-btn playcode-btn-primary" style="display:none; font-size:15px; font-weight:900;">
+							🚀 Ir a Antigravity (Puerto 3000)
+						</a>
+
+						<!-- Primary: Ir a Antigravity IDE Web (only when machine is running) -->
+						<a href="#" id="playcode-cs-btn-go-antigravity-ide" target="_blank" class="playcode-btn playcode-btn-dark" style="display:none; font-size:14px; font-weight:800;">
+							💻 Antigravity IDE (Puerto 4000)
+						</a>
+
+						<!-- Toggle Embedded Panel -->
+						<button type="button" id="playcode-cs-btn-invoke-agy" class="playcode-btn playcode-btn-outline" style="font-size:14px; font-weight:800;">
+							🖥️ Ver en Panel Embebido
 						</button>
 
 						<!-- Link to Linux Desktop tab -->

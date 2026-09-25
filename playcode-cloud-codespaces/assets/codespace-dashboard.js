@@ -296,7 +296,11 @@
 
 				// Desktop-only links
 				const btnOpenDesktop = $('btn-open-desktop');
+				const btnOpenIde     = $('btn-open-ide');
+				const btnOpenCli     = $('btn-open-cli');
+				const btnOpenAIStudio = $('btn-open-aistudio');
 				const btnOpenVscode  = $('btn-open-vscode');
+
 				if (btnOpenDesktop && currentCodespace) {
 					btnOpenDesktop.style.display = 'inline-flex';
 					btnOpenDesktop.href = `https://${currentCodespace.name}-8080.app.github.dev/vnc.html?autoconnect=true&resize=remote`;
@@ -309,13 +313,37 @@
 						btnOpenDesktop.removeAttribute('title');
 					}
 				}
+				if (btnOpenIde && currentCodespace) {
+					btnOpenIde.style.display = 'inline-flex';
+					btnOpenIde.href = `https://${currentCodespace.name}-4000.app.github.dev/vnc.html?autoconnect=true&resize=remote`;
+				}
+				if (btnOpenCli && currentCodespace) {
+					btnOpenCli.style.display = 'inline-flex';
+					btnOpenCli.href = `https://${currentCodespace.name}-3000.app.github.dev/`;
+				}
+				if (btnOpenAIStudio && currentCodespace) {
+					btnOpenAIStudio.style.display = 'inline-flex';
+					btnOpenAIStudio.href = `https://${currentCodespace.name}-5000.app.github.dev/vnc.html?autoconnect=true&resize=remote`;
+				}
 				if (btnOpenVscode && currentCodespace) {
 					btnOpenVscode.href = currentCodespace.web_url || '#';
 				}
 
-				// Build: enable Invoke button
+				// Build: direct buttons
+				const btnGoAgy    = document.getElementById('playcode-cs-btn-go-antigravity');
+				const btnGoAgyIde = document.getElementById('playcode-cs-btn-go-antigravity-ide');
 				const btnInvokeAgy = document.getElementById('playcode-cs-btn-invoke-agy');
+
+				if (btnGoAgy && currentCodespace) {
+					btnGoAgy.style.display = 'inline-flex';
+					btnGoAgy.href = `https://${currentCodespace.name}-3000.app.github.dev/`;
+				}
+				if (btnGoAgyIde && currentCodespace) {
+					btnGoAgyIde.style.display = 'inline-flex';
+					btnGoAgyIde.href = `https://${currentCodespace.name}-4000.app.github.dev/vnc.html?autoconnect=true&resize=remote`;
+				}
 				if (btnInvokeAgy) {
+					btnInvokeAgy.style.display = 'inline-flex';
 					btnInvokeAgy.disabled = false;
 					btnInvokeAgy.classList.remove('is-disabled');
 				}
@@ -335,10 +363,21 @@
 				if (btnStart) btnStart.style.display = 'none';
 				if (btnStop)  btnStop.style.display  = 'none';
 
-				const btnGoAIStudio = document.getElementById('playcode-cs-btn-go-aistudio');
-				if (btnGoAIStudio) {
-					btnGoAIStudio.style.display = 'none';
-				}
+				const btnOpenIde      = $('btn-open-ide');
+				const btnOpenCli      = $('btn-open-cli');
+				const btnOpenAIStudio = $('btn-open-aistudio');
+				const btnGoAgy        = document.getElementById('playcode-cs-btn-go-antigravity');
+				const btnGoAgyIde     = document.getElementById('playcode-cs-btn-go-antigravity-ide');
+				const btnInvokeAgy    = document.getElementById('playcode-cs-btn-invoke-agy');
+				const btnGoAIStudio   = document.getElementById('playcode-cs-btn-go-aistudio');
+
+				if (btnOpenIde) btnOpenIde.style.display = 'none';
+				if (btnOpenCli) btnOpenCli.style.display = 'none';
+				if (btnOpenAIStudio) btnOpenAIStudio.style.display = 'none';
+				if (btnGoAgy) btnGoAgy.style.display = 'none';
+				if (btnGoAgyIde) btnGoAgyIde.style.display = 'none';
+				if (btnInvokeAgy) btnInvokeAgy.style.display = 'none';
+				if (btnGoAIStudio) btnGoAIStudio.style.display = 'none';
 
 				if (transientAlert) {
 					transientAlert.style.display = 'block';
@@ -373,10 +412,21 @@
 				if (btnStop)  btnStop.style.display  = 'none';
 				if (transientAlert) transientAlert.style.display = 'none';
 
-				const btnGoAIStudio = document.getElementById('playcode-cs-btn-go-aistudio');
-				if (btnGoAIStudio) {
-					btnGoAIStudio.style.display = 'none';
-				}
+				const btnOpenIde      = $('btn-open-ide');
+				const btnOpenCli      = $('btn-open-cli');
+				const btnOpenAIStudio = $('btn-open-aistudio');
+				const btnGoAgy        = document.getElementById('playcode-cs-btn-go-antigravity');
+				const btnGoAgyIde     = document.getElementById('playcode-cs-btn-go-antigravity-ide');
+				const btnInvokeAgy    = document.getElementById('playcode-cs-btn-invoke-agy');
+				const btnGoAIStudio   = document.getElementById('playcode-cs-btn-go-aistudio');
+
+				if (btnOpenIde) btnOpenIde.style.display = 'none';
+				if (btnOpenCli) btnOpenCli.style.display = 'none';
+				if (btnOpenAIStudio) btnOpenAIStudio.style.display = 'none';
+				if (btnGoAgy) btnGoAgy.style.display = 'none';
+				if (btnGoAgyIde) btnGoAgyIde.style.display = 'none';
+				if (btnInvokeAgy) btnInvokeAgy.style.display = 'none';
+				if (btnGoAIStudio) btnGoAIStudio.style.display = 'none';
 
 				const btnOpenDesktop = $('btn-open-desktop');
 				if (btnOpenDesktop) {
@@ -598,7 +648,7 @@
 				});
 			}
 
-			// BUILD: "Invocar a Antigravity" button
+			// BUILD: "Ver en Panel Embebido" toggle button
 			const btnInvokeAgy = document.getElementById('playcode-cs-btn-invoke-agy');
 			if (btnInvokeAgy) {
 				btnInvokeAgy.addEventListener('click', function(e) {
@@ -609,7 +659,14 @@
 					}
 					const s = (currentCodespace.state || '').toLowerCase();
 					if (s === 'available' || s === 'running') {
-						launchAntigravity();
+						const container = document.getElementById('playcode-agy-container');
+						if (container && container.style.display !== 'none' && container.style.display) {
+							container.style.display = 'none';
+							btnInvokeAgy.innerHTML = '🖥️ Ver en Panel Embebido';
+						} else {
+							launchAntigravity();
+							btnInvokeAgy.innerHTML = '🔽 Ocultar Panel Embebido';
+						}
 					} else {
 						// Machine is stopped/transient → start it, then auto-launch
 						autoOpenAgyPending = true;
