@@ -9,7 +9,7 @@
     "memory": "8gb",
     "storage": "32gb"
   },
-  "forwardPorts": [8080, 6080, 3000, 4000],
+  "forwardPorts": [8080, 6080, 3000, 4000, 9000],
   "portsAttributes": {
     "8080": {
       "label": "KDE Desktop (noVNC)",
@@ -30,6 +30,11 @@
       "label": "Antigravity 2.0 (AI Platform)",
       "onAutoForward": "silent",
       "visibility": "public"
+    },
+    "9000": {
+      "label": "Service Control API",
+      "onAutoForward": "silent",
+      "visibility": "private"
     }
   },
   "postStartCommand": "bash -c 'WS_DIR=$(find /workspaces -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1); [ -z \"$WS_DIR\" ] && WS_DIR=/workspaces/kde-lite-ubuntu; sudo cp -f $WS_DIR/scripts/start-desktop.sh /usr/local/bin/start-desktop.sh 2>/dev/null || true; sudo cp -f $WS_DIR/scripts/ensure-ports-public.sh /usr/local/bin/ensure-ports-public.sh 2>/dev/null || true; sudo chmod +x /usr/local/bin/*.sh 2>/dev/null || true; /usr/local/bin/start-desktop.sh'",

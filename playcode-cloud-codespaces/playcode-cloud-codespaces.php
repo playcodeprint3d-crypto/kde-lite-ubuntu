@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Plugin Name: Play Code - Cloud Codespaces & Linux Desktop
  * Description: Conector oficial de GitHub Codespaces para MasterStudy LMS. Permite a los alumnos conectar su cuenta de GitHub, encender su máquina virtual y acceder a su escritorio Linux KDE en la nube.
@@ -546,6 +546,133 @@ function playcode_cs_ajax_disconnect() {
 	wp_send_json_success();
 }
 
+// 4.7. Panel de Control — Consultar estado de servicios internos del Codespace
+add_action( 'wp_ajax_playcode_service_status', 'playcode_service_status_handler' );
+function playcode_service_status_handler() {
+	check_ajax_referer( 'playcode_cs_nonce', 'nonce' );
+
+	$user_id = get_current_user_id();
+	if ( ! $user_id ) {
+		wp_send_json_error( 'No autorizado' );
+	}
+
+	$token = get_user_meta( $user_id, 'playcode_github_token', true );
+	if ( empty( $token ) ) {
+		wp_send_json_error( 'Token de GitHub no encontrado' );
+	}
+
+	// Obtener nombre del Codespace activo del usuario
+	$cs_data  = playcode_cs_api_request( '/user/codespaces', $token );
+	$cs_name  = '';
+	if ( ! empty( $cs_data['codespaces'] ) ) {
+		foreach ( $cs_data['codespaces'] as $cs ) {
+			$state = strtolower( $cs['state'] ?? '' );
+			if ( $state === 'available' || $state === 'running' ) {
+				$cs_name = $cs['name'];
+				break;
+			}
+		}
+	}
+
+	if ( empty( $cs_name ) ) {
+		wp_send_json_error( 'No hay un Codespace activo' );
+	}
+
+	// Llamar a la Service Control API interna del Codespace (puerto 9000)
+	$ctrl_url = "https://{$cs_name}-9000.app.github.dev/status";
+	$response = wp_remote_get( $ctrl_url, array(
+		'headers' => array(
+			'Authorization' => 'Bearer ' . $token,
+			'Accept'        => 'application/json',
+		),
+		'timeout'  => 10,
+		'sslverify' => true,
+	) );
+
+	if ( is_wp_error( $response ) ) {
+		wp_send_json_error( 'No se pudo conectar con el Panel de Control: ' . $response->get_error_message() );
+	}
+
+	$body = json_decode( wp_remote_retrieve_body( $response ), true );
+	if ( empty( $body['ok'] ) || empty( $body['services'] ) ) {
+		wp_send_json_error( 'Respuesta inválida del Panel de Control' );
+	}
+
+	wp_send_json_success( $body['services'] );
+}
+
+// 4.8. Panel de Control — Encender / Apagar un servicio individual
+add_action( 'wp_ajax_playcode_service_toggle', 'playcode_service_toggle_handler' );
+function playcode_service_toggle_handler() {
+	check_ajax_referer( 'playcode_cs_nonce', 'nonce' );
+
+	$user_id = get_current_user_id();
+	if ( ! $user_id ) {
+		wp_send_json_error( 'No autorizado' );
+	}
+
+	$token = get_user_meta( $user_id, 'playcode_github_token', true );
+	if ( empty( $token ) ) {
+		wp_send_json_error( 'Token de GitHub no encontrado' );
+	}
+
+	// Validar parámetros
+	$service = isset( $_POST['service'] ) ? sanitize_key( $_POST['service'] ) : '';
+	$action  = isset( $_POST['action'] )  ? sanitize_key( $_POST['action'] )  : '';
+
+	if ( ! in_array( $service, array( 'kde', 'ide', 'cli' ), true ) ) {
+		wp_send_json_error( 'Servicio inválido' );
+	}
+	if ( ! in_array( $action, array( 'start', 'stop' ), true ) ) {
+		wp_send_json_error( 'Acción inválida' );
+	}
+
+	// Obtener nombre del Codespace activo
+	$cs_data  = playcode_cs_api_request( '/user/codespaces', $token );
+	$cs_name  = '';
+	if ( ! empty( $cs_data['codespaces'] ) ) {
+		foreach ( $cs_data['codespaces'] as $cs ) {
+			$state = strtolower( $cs['state'] ?? '' );
+			if ( $state === 'available' || $state === 'running' ) {
+				$cs_name = $cs['name'];
+				break;
+			}
+		}
+	}
+
+	if ( empty( $cs_name ) ) {
+		wp_send_json_error( 'No hay un Codespace activo' );
+	}
+
+	// Llamar al endpoint de toggle en la Service Control API
+	$ctrl_url = "https://{$cs_name}-9000.app.github.dev/service/{$service}/{$action}";
+	$response = wp_remote_post( $ctrl_url, array(
+		'headers' => array(
+			'Authorization' => 'Bearer ' . $token,
+			'Accept'        => 'application/json',
+			'Content-Type'  => 'application/json',
+		),
+		'body'     => '',
+		'timeout'  => 15,
+		'sslverify' => true,
+	) );
+
+	if ( is_wp_error( $response ) ) {
+		wp_send_json_error( 'No se pudo conectar con el Panel de Control: ' . $response->get_error_message() );
+	}
+
+	$body = json_decode( wp_remote_retrieve_body( $response ), true );
+	if ( empty( $body['ok'] ) ) {
+		$err = $body['error'] ?? 'Error desconocido del Panel de Control';
+		wp_send_json_error( $err );
+	}
+
+	wp_send_json_success( array(
+		'service' => $body['service'],
+		'state'   => $body['state'],
+	) );
+}
+
 /* ==========================================================================
    5. DASHBOARD RENDERER — "MI ESCRITORIO LINUX" TAB
    ========================================================================== */
@@ -723,6 +850,68 @@ function playcode_codespaces_render_dashboard() {
 						<span>💡</span>
 						<div>
 							<strong>Tip de acceso:</strong> La primera vez que abras tu máquina en una sesión, GitHub mostrará una pantalla de seguridad con el botón verde <strong>"Continue"</strong>. Haz clic en <em>Continue</em> para ingresar a tu escritorio Linux. Recuerda presionar <strong>"Apagar Máquina Virtual"</strong> al terminar tu clase para ahorrar tus horas de GitHub.
+						</div>
+					</div>
+				</div>
+
+				<!-- Panel de Control de Servicios -->
+				<div id="playcode-cs-panel-control" style="display:none; margin-top:20px; border:1.5px solid #E2E8F0; border-radius:10px; overflow:hidden;">
+					<div style="background:#F8FAFC; padding:14px 18px; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
+						<div>
+							<strong style="font-size:14px; color:#001F4A;">&#127923; Panel de Control de Servicios</strong>
+							<p style="margin:2px 0 0; font-size:12px; color:#64748B;">Apaga los servicios que no uses para liberar memoria RAM de tu m&#225;quina.</p>
+						</div>
+						<button type="button" id="playcode-cs-panel-refresh" class="playcode-btn playcode-btn-outline playcode-btn-sm" title="Actualizar estado">&#128260;</button>
+					</div>
+					<!-- KDE Plasma -->
+					<div class="playcode-cs-service-row" id="playcode-svc-kde-row">
+						<div class="playcode-cs-service-info">
+							<span class="playcode-cs-service-icon">&#128421;&#65039;</span>
+							<div>
+								<strong class="playcode-cs-service-name">Escritorio KDE Plasma</strong>
+								<span class="playcode-cs-service-ram">~1.8 GB RAM &middot; Puertos 8080 / 6080</span>
+							</div>
+						</div>
+						<div class="playcode-cs-service-ctrl">
+							<span class="playcode-cs-service-status" id="playcode-svc-kde-status">&mdash;</span>
+							<label class="playcode-cs-switch">
+								<input type="checkbox" id="playcode-svc-kde-toggle" checked disabled>
+								<span class="playcode-cs-slider"></span>
+							</label>
+						</div>
+					</div>
+					<!-- Antigravity 2.0 IDE -->
+					<div class="playcode-cs-service-row" id="playcode-svc-ide-row">
+						<div class="playcode-cs-service-info">
+							<span class="playcode-cs-service-icon">&#9889;</span>
+							<div>
+								<strong class="playcode-cs-service-name">Antigravity 2.0 IDE</strong>
+								<span class="playcode-cs-service-ram">~1.5 GB RAM &middot; Puerto 4000</span>
+							</div>
+						</div>
+						<div class="playcode-cs-service-ctrl">
+							<span class="playcode-cs-service-status" id="playcode-svc-ide-status">&mdash;</span>
+							<label class="playcode-cs-switch">
+								<input type="checkbox" id="playcode-svc-ide-toggle" checked disabled>
+								<span class="playcode-cs-slider"></span>
+							</label>
+						</div>
+					</div>
+					<!-- Terminal CLI -->
+					<div class="playcode-cs-service-row" id="playcode-svc-cli-row" style="border-bottom:none;">
+						<div class="playcode-cs-service-info">
+							<span class="playcode-cs-service-icon">&#128187;</span>
+							<div>
+								<strong class="playcode-cs-service-name">Terminal CLI (ttyd)</strong>
+								<span class="playcode-cs-service-ram">~60 MB RAM &middot; Puerto 3000</span>
+							</div>
+						</div>
+						<div class="playcode-cs-service-ctrl">
+							<span class="playcode-cs-service-status" id="playcode-svc-cli-status">&mdash;</span>
+							<label class="playcode-cs-switch">
+								<input type="checkbox" id="playcode-svc-cli-toggle" checked disabled>
+								<span class="playcode-cs-slider"></span>
+							</label>
 						</div>
 					</div>
 				</div>
@@ -926,6 +1115,68 @@ function playcode_codespaces_render_build_dashboard() {
 						<span style="font-size:18px;">💡</span>
 						<div>
 							<strong>Para conectar tu cuenta de Google:</strong> Debido a las políticas de seguridad de Google que restringen el login dentro de ventanas embebidas, presiona el botón azul <strong>↗️ Abrir en Pestaña Nueva</strong> en la barra superior (o hazlo desde Google Chrome en tu <strong>🖥️ Máquina Virtual Linux</strong>). Una vez autenticado, Antigravity quedará habilitado automáticamente en este panel.
+						</div>
+					</div>
+				</div>
+
+				<!-- Panel de Control de Servicios -->
+				<div id="playcode-cs-panel-control" style="display:none; margin-top:20px; border:1.5px solid #E2E8F0; border-radius:10px; overflow:hidden;">
+					<div style="background:#F8FAFC; padding:14px 18px; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
+						<div>
+							<strong style="font-size:14px; color:#001F4A;">&#127923; Panel de Control de Servicios</strong>
+							<p style="margin:2px 0 0; font-size:12px; color:#64748B;">Apaga los servicios que no uses para liberar memoria RAM de tu m&#225;quina.</p>
+						</div>
+						<button type="button" id="playcode-cs-panel-refresh" class="playcode-btn playcode-btn-outline playcode-btn-sm" title="Actualizar estado">&#128260;</button>
+					</div>
+					<!-- KDE Plasma -->
+					<div class="playcode-cs-service-row" id="playcode-svc-kde-row">
+						<div class="playcode-cs-service-info">
+							<span class="playcode-cs-service-icon">&#128421;&#65039;</span>
+							<div>
+								<strong class="playcode-cs-service-name">Escritorio KDE Plasma</strong>
+								<span class="playcode-cs-service-ram">~1.8 GB RAM &middot; Puertos 8080 / 6080</span>
+							</div>
+						</div>
+						<div class="playcode-cs-service-ctrl">
+							<span class="playcode-cs-service-status" id="playcode-svc-kde-status">&mdash;</span>
+							<label class="playcode-cs-switch">
+								<input type="checkbox" id="playcode-svc-kde-toggle" checked disabled>
+								<span class="playcode-cs-slider"></span>
+							</label>
+						</div>
+					</div>
+					<!-- Antigravity 2.0 IDE -->
+					<div class="playcode-cs-service-row" id="playcode-svc-ide-row">
+						<div class="playcode-cs-service-info">
+							<span class="playcode-cs-service-icon">&#9889;</span>
+							<div>
+								<strong class="playcode-cs-service-name">Antigravity 2.0 IDE</strong>
+								<span class="playcode-cs-service-ram">~1.5 GB RAM &middot; Puerto 4000</span>
+							</div>
+						</div>
+						<div class="playcode-cs-service-ctrl">
+							<span class="playcode-cs-service-status" id="playcode-svc-ide-status">&mdash;</span>
+							<label class="playcode-cs-switch">
+								<input type="checkbox" id="playcode-svc-ide-toggle" checked disabled>
+								<span class="playcode-cs-slider"></span>
+							</label>
+						</div>
+					</div>
+					<!-- Terminal CLI -->
+					<div class="playcode-cs-service-row" id="playcode-svc-cli-row" style="border-bottom:none;">
+						<div class="playcode-cs-service-info">
+							<span class="playcode-cs-service-icon">&#128187;</span>
+							<div>
+								<strong class="playcode-cs-service-name">Terminal CLI (ttyd)</strong>
+								<span class="playcode-cs-service-ram">~60 MB RAM &middot; Puerto 3000</span>
+							</div>
+						</div>
+						<div class="playcode-cs-service-ctrl">
+							<span class="playcode-cs-service-status" id="playcode-svc-cli-status">&mdash;</span>
+							<label class="playcode-cs-switch">
+								<input type="checkbox" id="playcode-svc-cli-toggle" checked disabled>
+								<span class="playcode-cs-slider"></span>
+							</label>
 						</div>
 					</div>
 				</div>

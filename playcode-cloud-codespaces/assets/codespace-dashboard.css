@@ -410,3 +410,133 @@
 	}
 }
 
+/* ==========================================================================
+   Panel de Control de Servicios
+   ========================================================================== */
+
+.playcode-cs-service-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 18px;
+	border-bottom: 1px solid #F1F5F9;
+	gap: 12px;
+	background: #FFFFFF;
+	transition: background 0.15s ease;
+}
+
+.playcode-cs-service-row:hover {
+	background: #F8FAFC;
+}
+
+.playcode-cs-service-info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex: 1;
+}
+
+.playcode-cs-service-icon {
+	font-size: 20px;
+	width: 28px;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.playcode-cs-service-name {
+	display: block;
+	font-size: 13px;
+	font-weight: 700;
+	color: #1E293B;
+	line-height: 1.3;
+}
+
+.playcode-cs-service-ram {
+	display: block;
+	font-size: 11px;
+	color: #94A3B8;
+	margin-top: 2px;
+}
+
+.playcode-cs-service-ctrl {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.playcode-cs-service-status {
+	font-size: 11px;
+	font-weight: 600;
+	color: #6B7280;
+	min-width: 60px;
+	text-align: right;
+}
+
+/* Toggle Switch */
+.playcode-cs-switch {
+	position: relative;
+	display: inline-block;
+	width: 44px;
+	height: 24px;
+	cursor: pointer;
+	margin: 0;
+}
+
+.playcode-cs-switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+	position: absolute;
+}
+
+.playcode-cs-slider {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: #CBD5E1;
+	border-radius: 24px;
+	transition: background 0.25s ease;
+}
+
+.playcode-cs-slider::before {
+	content: '';
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	left: 3px;
+	bottom: 3px;
+	background: #FFFFFF;
+	border-radius: 50%;
+	transition: transform 0.25s ease;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.playcode-cs-switch input:checked + .playcode-cs-slider {
+	background: #16A34A;
+}
+
+.playcode-cs-switch input:checked + .playcode-cs-slider::before {
+	transform: translateX(20px);
+}
+
+.playcode-cs-switch input:disabled + .playcode-cs-slider {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+	.playcode-cs-service-row {
+		flex-wrap: wrap;
+	}
+	.playcode-cs-service-info {
+		flex-basis: 100%;
+	}
+	.playcode-cs-service-ctrl {
+		justify-content: flex-end;
+		width: 100%;
+	}
+}
+

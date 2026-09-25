@@ -232,3 +232,14 @@ echo "  * KDE     : https://${CS}-8080.app.github.dev/vnc.html"
 echo "  * Antigrav: https://${CS}-4000.app.github.dev/vnc.html"
 echo "  * CLI     : https://${CS}-3000.app.github.dev/"
 echo "=========================================================="
+
+# 10. Panel de Control de Servicios (service-control.py — puerto 9000)
+SERVICE_CTRL="$WS_DIR/scripts/service-control.py"
+if [ -f "$SERVICE_CTRL" ]; then
+    pkill -f "service-control.py" 2>/dev/null || true
+    sleep 1
+    # Al arrancar, limpiar flags .disabled — todo debe encenderse limpio
+    rm -f /tmp/.service-kde.disabled /tmp/.service-ide.disabled /tmp/.service-cli.disabled 2>/dev/null || true
+    echo "[+] Iniciando Panel de Control API (puerto 9000)..."
+    setsid nohup python3 "$SERVICE_CTRL" >> "$LOG_DIR/service-control.log" 2>&1 &
+fi

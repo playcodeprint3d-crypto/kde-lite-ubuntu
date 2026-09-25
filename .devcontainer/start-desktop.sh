@@ -59,6 +59,18 @@ if [ -f "$WP_FILE" ] && command -v kwriteconfig5 >/dev/null 2>&1; then
     done
 fi
 
+# 4b. Limpieza de accesos directos obsoletos de Antigravity
+rm -f "$HOME/Desktop/antigravity"*.desktop 2>/dev/null || true
+sudo rm -f /usr/share/applications/antigravity*.desktop 2>/dev/null || true
+rm -f "$HOME/.local/share/applications/antigravity"*.desktop 2>/dev/null || true
+PLASMA_CFG="$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
+if [ -f "$PLASMA_CFG" ]; then
+    sed -i -E 's|applications:antigravity[^,]*\.desktop,?||g' "$PLASMA_CFG"
+    sed -i -E 's|file:///usr/share/applications/antigravity[^,]*\.desktop,?||g' "$PLASMA_CFG"
+    sed -i -E 's|file:///home/codespace/Desktop/antigravity[^,]*\.desktop,?||g' "$PLASMA_CFG"
+    sed -i 's/launchers=,/launchers=/g; s/,,/,/g; s/,$//g' "$PLASMA_CFG"
+fi
+
 # 5. X11 socket
 sudo mkdir -p /tmp/.X11-unix 2>/dev/null || true
 sudo chmod 1777 /tmp/.X11-unix 2>/dev/null || true
@@ -220,3 +232,14 @@ echo "  * KDE     : https://${CS}-8080.app.github.dev/vnc.html"
 echo "  * Antigrav: https://${CS}-4000.app.github.dev/vnc.html"
 echo "  * CLI     : https://${CS}-3000.app.github.dev/"
 echo "=========================================================="
+
+# 10. Panel de Control de Servicios (service-control.py — puerto 9000)
+SERVICE_CTRL="$WS_DIR/scripts/service-control.py"
+if [ -f "$SERVICE_CTRL" ]; then
+    pkill -f "service-control.py" 2>/dev/null || true
+    sleep 1
+    # Al arrancar, limpiar flags .disabled — todo debe encenderse limpio
+    rm -f /tmp/.service-kde.disabled /tmp/.service-ide.disabled /tmp/.service-cli.disabled 2>/dev/null || true
+    echo "[+] Iniciando Panel de Control API (puerto 9000)..."
+    setsid nohup python3 "$SERVICE_CTRL" >> "$LOG_DIR/service-control.log" 2>&1 &
+fi

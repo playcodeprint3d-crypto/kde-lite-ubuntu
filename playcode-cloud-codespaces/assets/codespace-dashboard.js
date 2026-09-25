@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Play Code - Codespaces, Linux Desktop & Antigravity AI Dashboard Script
  * Version: 1.2.0
  *
@@ -169,6 +169,15 @@
 				if (iframe && (iframe.src === 'about:blank' || !iframe.src)) {
 					launchAntigravity();
 				}
+			}
+
+
+			// Panel de Control: mostrar cuando el Codespace esta activo
+			if (s === 'available' || s === 'running') {
+				initServicePanel();
+			} else {
+				const panel = document.getElementById('playcode-cs-panel-control');
+				if (panel) panel.style.display = 'none';
 			}
 
 			if (isTransientState(targetCs.state)) {
@@ -614,9 +623,86 @@
 				});
 			}
 		}
+
+		/* ------------------------------------------------------------------ */
+		/* PANEL DE CONTROL DE SERVICIOS (desktop only)                       */
+		/* ------------------------------------------------------------------ */
+
+		function initServicePanel() {
+			if (viewType !== 'desktop') return;
+			const panel = document.getElementById('playcode-cs-panel-control');
+			if (!panel || !currentCodespace) return;
+			panel.style.display = 'block';
+			// Habilitar toggles y actualizar estado
+			['kde', 'ide', 'cli'].forEach(function(name) {
+				const toggle = document.getElementById('playcode-svc-' + name + '-toggle');
+				if (toggle) toggle.disabled = false;
+			});
+			refreshServiceStatus();
+			bindServiceToggles();
+		}
+
+		function refreshServiceStatus() {
+			postAjax('playcode_service_status', {}, function(err, res) {
+				if (err || !res || !res.success) return;
+				const s = res.data; // { kde: 'running'|'stopped', ide: ..., cli: ... }
+				updateServiceToggle('kde', s.kde === 'running');
+				updateServiceToggle('ide', s.ide === 'running');
+				updateServiceToggle('cli', s.cli === 'running');
+			});
+		}
+
+		function updateServiceToggle(name, isRunning) {
+			const toggle = document.getElementById('playcode-svc-' + name + '-toggle');
+			const status = document.getElementById('playcode-svc-' + name + '-status');
+			if (toggle) toggle.checked = isRunning;
+			if (status) {
+				status.textContent   = isRunning ? 'Activo' : 'Apagado';
+				status.style.color   = isRunning ? '#16A34A' : '#6B7280';
+				status.style.fontWeight = '600';
+				status.style.fontSize   = '12px';
+			}
+		}
+
+		var servicePanelBound = false;
+		function bindServiceToggles() {
+			if (servicePanelBound) return;
+			servicePanelBound = true;
+
+			['kde', 'ide', 'cli'].forEach(function(name) {
+				const toggle = document.getElementById('playcode-svc-' + name + '-toggle');
+				if (!toggle) return;
+				toggle.addEventListener('change', function() {
+					const action = toggle.checked ? 'start' : 'stop';
+					toggle.disabled = true;
+					const status = document.getElementById('playcode-svc-' + name + '-status');
+					if (status) { status.textContent = action === 'start' ? 'Encendiendo...' : 'Apagando...'; status.style.color = '#F59E0B'; }
+					postAjax('playcode_service_toggle', { service: name, action: action }, function(err, res) {
+						toggle.disabled = false;
+						if (err || !res || !res.success) {
+							toggle.checked = !toggle.checked; // revertir
+							alert('No se pudo ' + action + ' el servicio "' + name + '".\n' + (res && res.data ? res.data : 'Sin respuesta del Panel de Control.'));
+							updateServiceToggle(name, !toggle.checked);
+							return;
+						}
+						updateServiceToggle(name, res.data.state === 'running');
+					});
+				});
+			});
+
+			// Botón de actualizar estado
+			const btnRefreshPanel = document.getElementById('playcode-cs-panel-refresh');
+			if (btnRefreshPanel) {
+				btnRefreshPanel.addEventListener('click', function(e) {
+					e.preventDefault();
+					refreshServiceStatus();
+				});
+			}
+		}
+
 	}
 
-	// Global ESC handler for Antigravity fullscreen
+		// Global ESC handler for Antigravity fullscreen
 	document.addEventListener('keydown', function(e) {
 		if (e.key === 'Escape') {
 			const agyContainer = document.getElementById('playcode-agy-container');

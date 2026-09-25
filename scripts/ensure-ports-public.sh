@@ -55,45 +55,53 @@ start_vnc() {
 }
 
 # Supervisar que los procesos estén escuchando en sus puertos locales
+# NOTA: Si existe /tmp/.service-{name}.disabled, el servicio fue apagado
+#       intencionalmente por el Panel de Control → el daemon NO lo reinicia.
 supervise_services() {
     local restarted=false
 
-    # 1. TigerVNC (puerto 5901)
-    if ! ss -tlpn 2>/dev/null | grep -E "(:5901\s)" >/dev/null 2>&1; then
-        start_vnc
-        restarted=true
-    fi
+    # 1. TigerVNC (puerto 5901) — KDE Plasma
+    if [ ! -f "/tmp/.service-kde.disabled" ]; then
+        if ! ss -tlpn 2>/dev/null | grep -E "(:5901\s)" >/dev/null 2>&1; then
+            start_vnc
+            restarted=true
+        fi
 
-    # 2. websockify en puerto 8080
-    if ! ss -tlpn 2>/dev/null | grep -E "(:8080\s)" >/dev/null 2>&1; then
-        start_websockify 8080 5901
-        restarted=true
-    fi
+        # 2. websockify en puerto 8080
+        if ! ss -tlpn 2>/dev/null | grep -E "(:8080\s)" >/dev/null 2>&1; then
+            start_websockify 8080 5901
+            restarted=true
+        fi
 
-    # 3. websockify en puerto 6080
-    if ! ss -tlpn 2>/dev/null | grep -E "(:6080\s)" >/dev/null 2>&1; then
-        start_websockify 6080 5901
-        restarted=true
-    fi
-
-    # 4. Antigravity 2.0 Web Hub en puerto 3000
-    if ! ss -tlpn 2>/dev/null | grep -E "(:3000\s)" >/dev/null 2>&1; then
-        start_antigravity_hub
-        restarted=true
-    fi
-
-    # 5. TigerVNC en :2 para Antigravity IDE (puerto 5902)
-    if ! ss -tlpn 2>/dev/null | grep -E "(:5902\s)" >/dev/null 2>&1; then
-        if [ -x "${HOME:-/home/codespace}/.vnc/xstartup-ide" ]; then
-            setsid nohup vncserver :2 -geometry 1366x768 -depth 24 -localhost yes -SecurityTypes None -cleanstale -noreset -xstartup "${HOME:-/home/codespace}/.vnc/xstartup-ide" </dev/null >> "${LOG_DIR}/vncserver-ide.log" 2>&1 || true
+        # 3. websockify en puerto 6080
+        if ! ss -tlpn 2>/dev/null | grep -E "(:6080\s)" >/dev/null 2>&1; then
+            start_websockify 6080 5901
             restarted=true
         fi
     fi
 
-    # 6. websockify en puerto 4000
-    if ! ss -tlpn 2>/dev/null | grep -E "(:4000\s)" >/dev/null 2>&1; then
-        start_websockify 4000 5902
-        restarted=true
+    # 4. Antigravity 2.0 Web Hub en puerto 3000 — CLI ttyd
+    if [ ! -f "/tmp/.service-cli.disabled" ]; then
+        if ! ss -tlpn 2>/dev/null | grep -E "(:3000\s)" >/dev/null 2>&1; then
+            start_antigravity_hub
+            restarted=true
+        fi
+    fi
+
+    # 5. TigerVNC en :2 para Antigravity IDE (puerto 5902)
+    if [ ! -f "/tmp/.service-ide.disabled" ]; then
+        if ! ss -tlpn 2>/dev/null | grep -E "(:5902\s)" >/dev/null 2>&1; then
+            if [ -x "${HOME:-/home/codespace}/.vnc/xstartup-ide" ]; then
+                setsid nohup vncserver :2 -geometry 1366x768 -depth 24 -localhost yes -SecurityTypes None -cleanstale -noreset -xstartup "${HOME:-/home/codespace}/.vnc/xstartup-ide" </dev/null >> "${LOG_DIR}/vncserver-ide.log" 2>&1 || true
+                restarted=true
+            fi
+        fi
+
+        # 6. websockify en puerto 4000
+        if ! ss -tlpn 2>/dev/null | grep -E "(:4000\s)" >/dev/null 2>&1; then
+            start_websockify 4000 5902
+            restarted=true
+        fi
     fi
 
     if [ "$restarted" = true ]; then
