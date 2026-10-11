@@ -71,6 +71,15 @@ if [ -f "$PLASMA_CFG" ]; then
     sed -i 's/launchers=,/launchers=/g; s/,,/,/g; s/,$//g' "$PLASMA_CFG"
 fi
 
+# 4c. Garantizar accesos directos principales en Desktop
+if [ -f /usr/share/applications/opencode-desktop.desktop ] && [ ! -f "$HOME/Desktop/opencode.desktop" ]; then
+    cp -f /usr/share/applications/opencode-desktop.desktop "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+    chmod +x "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+elif [ -f /usr/share/applications/ai.opencode.desktop.desktop ] && [ ! -f "$HOME/Desktop/opencode.desktop" ]; then
+    cp -f /usr/share/applications/ai.opencode.desktop.desktop "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+    chmod +x "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+fi
+
 # 5. X11 socket
 sudo mkdir -p /tmp/.X11-unix 2>/dev/null || true
 sudo chmod 1777 /tmp/.X11-unix 2>/dev/null || true

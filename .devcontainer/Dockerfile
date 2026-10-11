@@ -52,10 +52,19 @@ RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selectio
         python3 \
         /tmp/google-chrome.deb \
     && rm -f /tmp/google-chrome.deb \
+    && wget -q -O /tmp/opencode.deb https://opencode.ai/files/bin/2.0.26/opencode-desktop-linux-amd64.deb \
+    && apt-get install -y --no-install-recommends /tmp/opencode.deb \
+    && rm -f /tmp/opencode.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && sed -i 's|exec -a "$0" "$HERE/chrome" "$@"|exec -a "$0" "$HERE/chrome" --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-features=WebAssemblySIMD "$@"|' \
-        /opt/google/chrome/google-chrome 2>/dev/null || true
+        /opt/google/chrome/google-chrome 2>/dev/null || true \
+    && if [ -f /opt/OpenCode/ai.opencode.desktop ] && [ ! -f /opt/OpenCode/ai.opencode.desktop.bin ]; then \
+        mv /opt/OpenCode/ai.opencode.desktop /opt/OpenCode/ai.opencode.desktop.bin \
+        && printf '#!/usr/bin/env bash\nunset ELECTRON_RUN_AS_NODE\nexport DISPLAY="${DISPLAY:-:1}"\nexec /opt/OpenCode/ai.opencode.desktop.bin \\\n    --disable-gpu \\\n    --disable-dev-shm-usage \\\n    --no-sandbox \\\n    "$@"\n' > /opt/OpenCode/ai.opencode.desktop \
+        && chmod +x /opt/OpenCode/ai.opencode.desktop \
+        && ln -sf /opt/OpenCode/ai.opencode.desktop /usr/local/bin/opencode; \
+    fi
 
 # ---------------------------------------------------------------------------
 # 2. Instalar Google Antigravity 2.0 Hub (AplicaciÃ³n oficial de Chat con IA)
@@ -136,6 +145,8 @@ USER codespace
 RUN mkdir -p /home/codespace/Desktop \
     && cp /usr/share/applications/google-chrome.desktop /home/codespace/Desktop/ 2>/dev/null || true \
     && chmod +x /home/codespace/Desktop/google-chrome.desktop 2>/dev/null || true \
+    && cp /usr/share/applications/opencode*.desktop /home/codespace/Desktop/opencode.desktop 2>/dev/null || true \
+    && chmod +x /home/codespace/Desktop/opencode.desktop 2>/dev/null || true \
     && cp /usr/share/applications/antigravity.desktop /home/codespace/Desktop/ 2>/dev/null || true \
     && chmod +x /home/codespace/Desktop/antigravity.desktop 2>/dev/null || true \
     && cp /usr/share/applications/antigravity-web.desktop /home/codespace/Desktop/ 2>/dev/null || true \
