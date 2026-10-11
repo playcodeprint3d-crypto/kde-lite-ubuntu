@@ -54,7 +54,7 @@ RUN echo "debconf debconf/frontend select Noninteractive" | debconf-set-selectio
     && rm -f /tmp/google-chrome.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && sed -i 's|exec -a "$0" "$HERE/chrome" "$@"|exec -a "$0" "$HERE/chrome" --disable-dev-shm-usage --disable-features=WebAssemblySIMD "$@"|' \
+    && sed -i 's|exec -a "$0" "$HERE/chrome" "$@"|exec -a "$0" "$HERE/chrome" --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-features=WebAssemblySIMD "$@"|' \
         /opt/google/chrome/google-chrome 2>/dev/null || true
 
 # ---------------------------------------------------------------------------

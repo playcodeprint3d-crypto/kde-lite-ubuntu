@@ -191,6 +191,7 @@ LANDING_PAGE="file:///home/codespace/Documents/landing-laboratorio-ia.html"
 
 while true; do
     google-chrome \
+        --user-data-dir="\$HOME/.config/google-chrome-landing" \
         --no-sandbox \
         --disable-gpu \
         --disable-dev-shm-usage \
@@ -199,7 +200,7 @@ while true; do
         --disable-session-crashed-bubble \
         --disable-infobars \
         --start-maximized \
-        --app="$LANDING_PAGE"
+        --app="\$LANDING_PAGE"
     sleep 2
 done
 XLANDING

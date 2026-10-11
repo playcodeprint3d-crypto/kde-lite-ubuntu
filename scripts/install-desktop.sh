@@ -91,7 +91,8 @@ if ! command -v google-chrome >/dev/null 2>&1; then
 fi
 
 # Optimizar Chrome para contenedores y evitar errores SIGILL con WebAssembly/Gemini
-sudo sed -i 's|exec -a "$0" "$HERE/chrome" "$@"|exec -a "$0" "$HERE/chrome" --disable-dev-shm-usage --disable-features=WebAssemblySIMD "$@"|' /opt/google/chrome/google-chrome 2>/dev/null || true
+sudo sed -i 's|exec -a "$0" "$HERE/chrome" "$@"|exec -a "$0" "$HERE/chrome" --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-features=WebAssemblySIMD "$@"|' /opt/google/chrome/google-chrome 2>/dev/null || true
+sudo sed -i 's|--disable-dev-shm-usage --disable-features=WebAssemblySIMD|--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-features=WebAssemblySIMD|' /opt/google/chrome/google-chrome 2>/dev/null || true
 sudo mount -o remount,size=2G /dev/shm 2>/dev/null || true
 
 # Descargar e instalar Google Antigravity IDE (2.5.5) oficial
