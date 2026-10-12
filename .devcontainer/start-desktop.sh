@@ -236,9 +236,8 @@ if [ ! -f "$HOME/Documents/landing-laboratorio-ia.html" ]; then
     fi
 fi
 
-if [ ! -f "$HOME/.vnc/xstartup-landing" ]; then
-    mkdir -p "$HOME/.vnc" 2>/dev/null || true
-    cat > "$HOME/.vnc/xstartup-landing" << 'XLANDING'
+mkdir -p "$HOME/.vnc" 2>/dev/null || true
+cat > "$HOME/.vnc/xstartup-landing" << 'XLANDING'
 #!/bin/bash
 unset SESSION_MANAGER DBUS_SESSION_BUS_ADDRESS
 export DISPLAY=":3"
@@ -254,8 +253,8 @@ sleep 1
 LANDING_PAGE="file:///home/codespace/Documents/landing-laboratorio-ia.html"
 
 while true; do
-    google-chrome \
-        --user-data-dir="\$HOME/.config/google-chrome-landing" \
+    /usr/bin/google-chrome \
+        --user-data-dir="$HOME/.config/google-chrome-landing" \
         --no-sandbox \
         --disable-gpu \
         --disable-dev-shm-usage \
@@ -263,13 +262,13 @@ while true; do
         --no-default-browser-check \
         --disable-session-crashed-bubble \
         --disable-infobars \
+        --homepage="$LANDING_PAGE" \
         --start-maximized \
-        --app="\$LANDING_PAGE"
+        --app="$LANDING_PAGE"
     sleep 2
 done
 XLANDING
-    chmod +x "$HOME/.vnc/xstartup-landing" 2>/dev/null || true
-fi
+chmod +x "$HOME/.vnc/xstartup-landing" 2>/dev/null || true
 
 rm -f /tmp/.X3-lock /tmp/.X11-unix/X3 2>/dev/null || true
 sudo rm -f /tmp/.X3-lock /tmp/.X11-unix/X3 2>/dev/null || true
