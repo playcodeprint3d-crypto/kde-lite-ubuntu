@@ -71,6 +71,67 @@ if [ -f "$PLASMA_CFG" ]; then
     sed -i 's/launchers=,/launchers=/g; s/,,/,/g; s/,$//g' "$PLASMA_CFG"
 fi
 
+# 4c. Garantizar accesos directos principales en Desktop (Chrome con perfil aislado, OpenCode)
+cat > "$HOME/Desktop/google-chrome.desktop" << 'CHRM'
+[Desktop Entry]
+Version=1.0
+Name=Google Chrome
+Comment=Access the Internet
+Exec=/usr/bin/google-chrome --user-data-dir=/home/codespace/.config/google-chrome-desktop --no-sandbox %U
+Terminal=false
+Icon=google-chrome
+Type=Application
+Categories=Network;WebBrowser;
+StartupNotify=true
+CHRM
+chmod +x "$HOME/Desktop/google-chrome.desktop" 2>/dev/null || true
+
+if [ -f /usr/share/applications/opencode-desktop.desktop ] && [ ! -f "$HOME/Desktop/opencode.desktop" ]; then
+    cp -f /usr/share/applications/opencode-desktop.desktop "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+    chmod +x "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+elif [ -f /usr/share/applications/ai.opencode.desktop.desktop ] && [ ! -f "$HOME/Desktop/opencode.desktop" ]; then
+    cp -f /usr/share/applications/ai.opencode.desktop.desktop "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+    chmod +x "$HOME/Desktop/opencode.desktop" 2>/dev/null || true
+fi
+
+# 4d. Configurar wrapper inteligente de xdg-open (soporta OAuth Google en Antigravity :2 y KDE :1)
+sudo tee /usr/local/bin/playcode-browser-open >/dev/null << 'BRW'
+#!/usr/bin/env bash
+URL="$1"
+[ -z "$URL" ] && exit 0
+
+echo "[$(date -u)] browser-open called with: $URL" >> /tmp/xdg-open.log
+echo "$URL" > /tmp/last_oauth_url.txt
+chmod 666 /tmp/last_oauth_url.txt /tmp/xdg-open.log 2>/dev/null || true
+
+TARGET_DISP="${DISPLAY:-:1}"
+
+# Si la llamada viene de Antigravity o el display es :2, abrir en :2 con perfil auth
+if [ "$TARGET_DISP" = ":2" ]; then
+    export DISPLAY=":2"
+    export XAUTHORITY="/home/codespace/.Xauthority"
+    nohup /usr/bin/google-chrome \
+        --user-data-dir="/home/codespace/.config/google-chrome-auth" \
+        --no-sandbox \
+        --disable-gpu \
+        --disable-dev-shm-usage \
+        --start-maximized \
+        "$URL" >/tmp/chrome-oauth.log 2>&1 &
+else
+    export DISPLAY=":1"
+    export XAUTHORITY="/home/codespace/.Xauthority"
+    nohup /usr/bin/google-chrome \
+        --user-data-dir="/home/codespace/.config/google-chrome-desktop" \
+        --no-sandbox \
+        --disable-gpu \
+        --disable-dev-shm-usage \
+        "$URL" >/tmp/chrome-desktop.log 2>&1 &
+fi
+exit 0
+BRW
+sudo chmod +x /usr/local/bin/playcode-browser-open 2>/dev/null || true
+sudo ln -sf /usr/local/bin/playcode-browser-open /usr/bin/xdg-open 2>/dev/null || true
+
 # 5. X11 socket
 sudo mkdir -p /tmp/.X11-unix 2>/dev/null || true
 sudo chmod 1777 /tmp/.X11-unix 2>/dev/null || true
@@ -128,6 +189,7 @@ cat > "$HOME/.vnc/xstartup-ide" << 'XSTARTUP'
 #!/bin/bash
 unset SESSION_MANAGER DBUS_SESSION_BUS_ADDRESS
 export DISPLAY=":2"
+export BROWSER="/usr/local/bin/playcode-browser-open"
 export XDG_CURRENT_DESKTOP=Antigravity
 export XDG_RUNTIME_DIR="/tmp/runtime-${USER:-codespace}"
 mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
@@ -136,6 +198,8 @@ command -v autocutsel >/dev/null 2>&1 && { autocutsel -fork 2>/dev/null; autocut
 command -v openbox >/dev/null 2>&1 && openbox & sleep 1
 [ -f "/usr/share/wallpapers/playcode-wallpaper.jpg" ] && command -v feh >/dev/null 2>&1 && feh --bg-fill /usr/share/wallpapers/playcode-wallpaper.jpg 2>/dev/null &
 while true; do
+    export DISPLAY=":2"
+    export BROWSER="/usr/local/bin/playcode-browser-open"
     if [ -x /usr/local/bin/antigravity ]; then
         /usr/local/bin/antigravity --no-sandbox --disable-gpu --disable-dev-shm-usage
     elif [ -x /opt/antigravity/antigravity ]; then
