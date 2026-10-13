@@ -172,6 +172,15 @@ RUN mkdir -p /usr/share/wallpapers/PlayCode/contents/images \
     && chmod -R a+rX /usr/share/wallpapers
 
 # ---------------------------------------------------------------------------
+# 6c. Landing Page Laboratorio de IA predeterminada en el home del alumno
+# ---------------------------------------------------------------------------
+COPY assets/landing-laboratorio-ia.html /usr/share/playcode/landing-laboratorio-ia.html
+RUN mkdir -p /etc/skel/Documents /etc/skel/Documentos /usr/share/playcode \
+    && cp /usr/share/playcode/landing-laboratorio-ia.html /etc/skel/Documents/landing-laboratorio-ia.html \
+    && cp /usr/share/playcode/landing-laboratorio-ia.html /etc/skel/Documentos/landing-laboratorio-ia.html \
+    && chmod -R a+r /usr/share/playcode /etc/skel/Documents /etc/skel/Documentos
+
+# ---------------------------------------------------------------------------
 # 7. Script global de inicio del escritorio: /usr/local/bin/start-desktop.sh
 # ---------------------------------------------------------------------------
 COPY start-desktop.sh /usr/local/bin/start-desktop.sh

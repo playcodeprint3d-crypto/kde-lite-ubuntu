@@ -228,12 +228,13 @@ if ! ss -tlpn 2>/dev/null | grep -q ':4000'; then
 fi
 
 # 7b. TigerVNC :3 -> Landing Page Play Code Laboratorio IA (Google AI Studio) -> 5000
-if [ ! -f "$HOME/Documents/landing-laboratorio-ia.html" ]; then
-    mkdir -p "$HOME/Documents" "$HOME/Documentos" 2>/dev/null || true
-    if [ -f "$WS_DIR/assets/landing-laboratorio-ia.html" ]; then
-        cp -f "$WS_DIR/assets/landing-laboratorio-ia.html" "$HOME/Documents/landing-laboratorio-ia.html" 2>/dev/null || true
-        cp -f "$WS_DIR/assets/landing-laboratorio-ia.html" "$HOME/Documentos/landing-laboratorio-ia.html" 2>/dev/null || true
-    fi
+mkdir -p "$HOME/Documents" "$HOME/Documentos" 2>/dev/null || true
+if [ -f "$WS_DIR/assets/landing-laboratorio-ia.html" ]; then
+    cp -f "$WS_DIR/assets/landing-laboratorio-ia.html" "$HOME/Documents/landing-laboratorio-ia.html" 2>/dev/null || true
+    cp -f "$WS_DIR/assets/landing-laboratorio-ia.html" "$HOME/Documentos/landing-laboratorio-ia.html" 2>/dev/null || true
+elif [ -f "/usr/share/playcode/landing-laboratorio-ia.html" ]; then
+    cp -f "/usr/share/playcode/landing-laboratorio-ia.html" "$HOME/Documents/landing-laboratorio-ia.html" 2>/dev/null || true
+    cp -f "/usr/share/playcode/landing-laboratorio-ia.html" "$HOME/Documentos/landing-laboratorio-ia.html" 2>/dev/null || true
 fi
 
 mkdir -p "$HOME/.vnc" 2>/dev/null || true

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play Code — Laboratorio de IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       PLAY CODE DESIGN SYSTEM — NEO-BRUTALIST LMS THEME
+       Colores oficiales del Panel de Control del Alumno (edu.playcode.com.ar):
+       - Azul Marino Principal: #001F4A
+       - Amarillo Primario: #FFE600 / Hover: #FFED4A
+       - Fondo general: #F8FAFC
+       - Blanco tarjetas: #FFFFFF
+       - Bordes: 2px / 2.5px solid #001F4A
+       - Sombras: 5px 5px 0px #001F4A / 4px 4px 0px #001F4A
+       ========================================================================== */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #F8FAFC;
+      color: #001F4A;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      /* Cuadrícula sutil técnica inspirada en el campus */
+      background-image: 
+        radial-gradient(#CBD5E1 1.2px, transparent 1.2px),
+        linear-gradient(to right, rgba(0, 31, 74, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 31, 74, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px, 48px 48px, 48px 48px;
+    }
+
+    /* Contenedor central */
+    .playcode-cs-wrapper {
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* Tarjeta principal Neo-Brutalista idéntica al panel del alumno */
+    .playcode-cs-card {
+      background: #FFFFFF;
+      border: 2.5px solid #001F4A;
+      box-shadow: 6px 6px 0px #001F4A;
+      padding: 38px 34px;
+      position: relative;
+    }
+
+    /* Cabecera de la tarjeta */
+    .playcode-cs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 24px;
+      border-bottom: 2.5px solid #001F4A;
+      padding-bottom: 18px;
+    }
+
+    .playcode-cs-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #001F4A;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    /* Badge idéntico a los badges de estado del panel */
+    .playcode-cs-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border: 1.5px solid #001F4A;
+      letter-spacing: 0.5px;
+      background: #BAE6FD;
+      color: #0369A1;
+    }
+
+    .playcode-cs-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #0284C7;
+      animation: playcode-pulse 1.5s infinite;
+    }
+
+    @keyframes playcode-pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Cuerpo central */
+    .hero-content {
+      text-align: center;
+      padding: 10px 0 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Logo / Emblema Neo-Brutalista */
+    .emblem-box {
+      width: 72px;
+      height: 72px;
+      background: #FFE600;
+      border: 2px solid #001F4A;
+      box-shadow: 4px 4px 0px #001F4A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .emblem-box svg {
+      width: 38px;
+      height: 38px;
+      color: #001F4A;
+    }
+
+    .headline {
+      font-size: clamp(24px, 3.8vw, 32px);
+      font-weight: 900;
+      color: #001F4A;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline-pill {
+      display: inline-block;
+      background: #001F4A;
+      color: #FFE600;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 14px;
+      border: 1.5px solid #001F4A;
+      margin-bottom: 16px;
+    }
+
+    .lead-text {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.6;
+      color: #475569;
+      max-width: 620px;
+      margin-bottom: 28px;
+    }
+
+    /* Sección de Acción: Botones Neo-Brutalistas */
+    .playcode-cs-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .playcode-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 32px;
+      border: 2px solid #001F4A;
+      box-shadow: 4px 4px 0px #001F4A;
+      cursor: pointer;
+      text-decoration: none !important;
+      transition: all 0.15s ease-in-out;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .playcode-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #001F4A;
+    }
+
+    .playcode-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #001F4A;
+    }
+
+    /* Botón Principal (Amarillo Neo-Brutalista) */
+    .playcode-btn-primary {
+      background: #FFE600;
+      color: #001F4A !important;
+    }
+
+    .playcode-btn-primary:hover {
+      background: #FFED4A;
+    }
+
+    /* Specs Grid de 3 Pilares (Idéntico a playcode-cs-grid) */
+    .playcode-cs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 22px;
+    }
+
+    .playcode-cs-grid-item {
+      background: #F8FAFC;
+      border: 1.5px solid #001F4A;
+      padding: 16px 18px;
+      transition: transform 0.15s ease;
+    }
+
+    .playcode-cs-grid-item:hover {
+      background: #FFFFFF;
+      box-shadow: 3px 3px 0px #001F4A;
+      transform: translate(-1px, -1px);
+    }
+
+    .playcode-cs-grid-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748B;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .playcode-cs-grid-value {
+      font-size: 15px;
+      font-weight: 900;
+      color: #001F4A;
+      margin-bottom: 6px;
+    }
+
+    .playcode-cs-grid-desc {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748B;
+      line-height: 1.45;
+    }
+
+    /* Notice Box idéntico a playcode-cs-notice */
+    .playcode-cs-notice {
+      background: #EFF6FF;
+      border: 1.5px solid #001F4A;
+      padding: 14px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1E40AF;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .playcode-cs-notice strong {
+      color: #001F4A;
+    }
+
+    /* Pie de página */
+    .playcode-cs-footer {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #64748B;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 600px) {
+      .playcode-cs-card {
+        padding: 24px 18px;
+      }
+      .playcode-btn {
+        width: 100%;
+        padding: 14px 20px;
+      }
+      .playcode-cs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="playcode-cs-wrapper">
+    <div class="playcode-cs-card">
+
+      <!-- Header Card -->
+      <div class="playcode-cs-header">
+        <h2 class="playcode-cs-title">
+          <span>🧠</span> Laboratorio de Inteligencia Artificial
+        </h2>
+        <span class="playcode-cs-badge">
+          <span class="playcode-cs-dot"></span> Google Gemini &bull; Play Lab
+        </span>
+      </div>
+
+      <!-- Main Hero Content -->
+      <div class="hero-content">
+        <!-- Emblema Neo-Brutalista -->
+        <div class="emblem-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+            <path d="M5 3v4"/>
+            <path d="M19 17v4"/>
+            <path d="M3 5h4"/>
+            <path d="M17 19h4"/>
+          </svg>
+        </div>
+
+        <h1 class="headline">Laboratorio de IA Play Code</h1>
+
+        <div class="tagline-pill">
+          De consumidores de pantallas a creadores con IA
+        </div>
+
+        <p class="lead-text">
+          No vas a memorizar código. En este espacio aprendes la metodología del <strong>Vibecoding</strong>: dirigir los modelos más avanzados de Inteligencia Artificial de Google para diseñar lógica, crear aplicaciones y transformar tus ideas en software real.
+        </p>
+
+        <!-- Botón Principal: Ir a AI Studio -->
+        <div class="playcode-cs-actions">
+          <a href="https://aistudio.google.com/apps" target="_self" class="playcode-btn playcode-btn-primary" id="btn-go-aistudio">
+            <span>🚀 Ir a Google AI Studio</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- 3 Pilares del Journey Pedagógico -->
+        <div class="playcode-cs-grid">
+          <div class="playcode-cs-grid-item">
+            <span class="playcode-cs-grid-label"><span>💡</span> Nivel 1</span>
+            <h4 class="playcode-cs-grid-value">1. Pensar</h4>
+            <p class="playcode-cs-grid-desc">Diseña la lógica y la arquitectura con Gemini Pro y modelos multimodales.</p>
+          </div>
+
+          <div class="playcode-cs-grid-item">
+            <span class="playcode-cs-grid-label"><span>⚡</span> Nivel 2</span>
+            <h4 class="playcode-cs-grid-value">2. Crear</h4>
+            <p class="playcode-cs-grid-desc">Experimenta con prompts de sistema, ajuste de parámetros y contextos extensos.</p>
+          </div>
+
+          <div class="playcode-cs-grid-item">
+            <span class="playcode-cs-grid-label"><span>🎯</span> Nivel 3</span>
+            <h4 class="playcode-cs-grid-value">3. Dirigir</h4>
+            <p class="playcode-cs-grid-desc">Exporta tus API keys y conecta tus soluciones con tu Antigravity IDE en la nube.</p>
+          </div>
+        </div>
+
+        <!-- Tip Box de Ayuda -->
+        <div class="playcode-cs-notice">
+          <span style="font-size:18px;">💡</span>
+          <div>
+            <strong>Tip del Alumno:</strong> Al presionar <strong>"Ir a Google AI Studio"</strong> entrarás directamente a la consola oficial de Google. Puedes iniciar sesión con tu cuenta de Google y utilizar tus modelos de IA de inmediato.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer Oficial -->
+    <footer class="playcode-cs-footer">
+      PLAY CODE &bull; EDU.PLAYCODE.COM.AR &bull; LABORATORIO DE INTELIGENCIA ARTIFICIAL
+    </footer>
+  </div>
+
+</body>
+</html>
