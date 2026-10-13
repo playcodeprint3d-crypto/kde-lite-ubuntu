@@ -1,0 +1,307 @@
+/* ==========================================================================
+   PLAY CODE — MINECRAFT SERVER DASHBOARD (NEO-BRUTALIST LMS THEME)
+   ========================================================================== */
+
+.playcode-mc-wrapper {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #001F4A;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 10px 0 30px;
+}
+
+/* Header */
+.playcode-mc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2.5px solid #001F4A;
+}
+
+.playcode-mc-title {
+  font-size: 26px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: #001F4A;
+  margin: 0 0 4px;
+}
+
+.playcode-mc-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748B;
+  margin: 0;
+}
+
+/* Badges */
+.playcode-mc-badge {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 2px solid #001F4A;
+  box-shadow: 3px 3px 0px #001F4A;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.playcode-mc-badge-green { background: #22C55E; color: #FFFFFF; }
+.playcode-mc-badge-yellow { background: #FFE600; color: #001F4A; }
+.playcode-mc-badge-red { background: #FF6B6B; color: #FFFFFF; }
+.playcode-mc-badge-gray { background: #E2E8F0; color: #475569; }
+
+/* Cards */
+.playcode-mc-card {
+  background: #FFFFFF;
+  border: 2.5px solid #001F4A;
+  box-shadow: 6px 6px 0px #001F4A;
+  padding: 28px;
+  margin-bottom: 22px;
+  border-radius: 6px;
+}
+
+.playcode-mc-card h2, .playcode-mc-card h3 {
+  font-size: 20px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #001F4A;
+  margin: 0 0 10px;
+}
+
+.playcode-mc-card p {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* IP Card */
+.playcode-mc-ip-card {
+  background: #001F4A;
+  color: #FFFFFF;
+  box-shadow: 6px 6px 0px #FFE600;
+}
+
+.playcode-mc-ip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.playcode-mc-label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #94A3B8;
+}
+
+.playcode-mc-ip-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 16px 20px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.playcode-mc-ip-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  color: #FFE600;
+  letter-spacing: 1px;
+}
+
+.playcode-mc-ip-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #CBD5E1;
+}
+
+.playcode-mc-ip-footer strong {
+  color: #FFFFFF;
+}
+
+/* Pills */
+.playcode-mc-pill {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1.5px solid #001F4A;
+}
+
+.playcode-mc-pill-green { background: #22C55E; color: #FFFFFF; }
+.playcode-mc-pill-yellow { background: #FFE600; color: #001F4A; }
+.playcode-mc-pill-red { background: #FF6B6B; color: #FFFFFF; }
+
+/* Buttons */
+.playcode-mc-btn {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 22px;
+  border: 2.5px solid #001F4A;
+  box-shadow: 4px 4px 0px #001F4A;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+  transition: all 0.1s ease;
+  background: #FFE600;
+  color: #001F4A;
+  line-height: 1;
+}
+
+.playcode-mc-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #001F4A;
+}
+
+.playcode-mc-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #001F4A;
+}
+
+.playcode-mc-btn-primary { background: #FFE600; color: #001F4A; }
+.playcode-mc-btn-yellow { background: #FFE600; color: #001F4A; }
+.playcode-mc-btn-green { background: #22C55E; color: #FFFFFF; }
+.playcode-mc-btn-red { background: #FF6B6B; color: #FFFFFF; }
+.playcode-mc-btn-blue { background: #38BDF8; color: #001F4A; }
+.playcode-mc-btn-outline-red { background: #FFFFFF; color: #DC2626; border-color: #DC2626; box-shadow: 3px 3px 0px #DC2626; }
+
+.playcode-mc-btn-sm {
+  padding: 8px 14px;
+  font-size: 12px;
+  box-shadow: 3px 3px 0px #001F4A;
+}
+
+/* Actions Bar */
+.playcode-mc-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Inputs & Selects */
+.playcode-mc-select, .playcode-mc-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #001F4A;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #001F4A;
+  background: #FFFFFF;
+  outline: none;
+  margin-top: 6px;
+}
+
+.playcode-mc-select:focus, .playcode-mc-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Whitelist Section */
+.playcode-mc-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.playcode-mc-tag {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #E2E8F0;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1.5px solid #001F4A;
+}
+
+.playcode-mc-whitelist-input-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.playcode-mc-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.playcode-mc-chip {
+  background: #EFF6FF;
+  border: 2px solid #001F4A;
+  box-shadow: 2.5px 2.5px 0px #001F4A;
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+}
+
+.playcode-mc-chip-del {
+  cursor: pointer;
+  color: #DC2626;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.playcode-mc-chip-del:hover {
+  transform: scale(1.2);
+}
+
+/* Quick Actions Grid */
+.playcode-mc-quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Spinners & Loading */
+.playcode-mc-loading-box {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.playcode-mc-spinner {
+  width: 44px;
+  height: 44px;
+  border: 5px solid #E2E8F0;
+  border-top-color: #001F4A;
+  border-radius: 50%;
+  animation: mc-spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes mc-spin {
+  to { transform: rotate(360deg); }
+}
+
+.playcode-mc-hero-auth {
+  text-align: center;
+  padding: 30px 10px;
+}
+
+.playcode-mc-icon-cube {
+  font-size: 54px;
+  margin-bottom: 12px;
+}

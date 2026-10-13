@@ -1474,17 +1474,21 @@ function playcode_cs_render_admin_settings() {
 		update_option( 'playcode_cs_client_id',     sanitize_text_field( $_POST['playcode_cs_client_id'] ) );
 		update_option( 'playcode_cs_client_secret', sanitize_text_field( $_POST['playcode_cs_client_secret'] ) );
 		update_option( 'playcode_cs_default_repo',  sanitize_text_field( $_POST['playcode_cs_default_repo'] ) );
+		if ( isset( $_POST['playcode_mc_relay_host'] ) ) {
+			update_option( 'playcode_mc_relay_host', sanitize_text_field( $_POST['playcode_mc_relay_host'] ) );
+		}
 		echo '<div class="updated"><p>Ajustes guardados correctamente.</p></div>';
 	}
 
 	$client_id     = get_option( 'playcode_cs_client_id', '' );
 	$client_secret = get_option( 'playcode_cs_client_secret', '' );
 	$default_repo  = get_option( 'playcode_cs_default_repo', 'playcodeprint3d-crypto/kde-lite-ubuntu' );
+	$mc_relay_host = get_option( 'playcode_mc_relay_host', '35.209.249.255' );
 	$callback_url  = home_url( '/?playcode_gh_callback=1' );
 	?>
 	<div class="wrap" style="max-width:800px;">
-		<h1>⚙️ PlayCode Codespaces & Linux Desktop</h1>
-		<p>Configura la integración oficial con GitHub para que los alumnos puedan encender su entorno virtual desde su panel de MasterStudy LMS.</p>
+		<h1>⚙️ PlayCode Codespaces & Servidores</h1>
+		<p>Configura la integración oficial con GitHub para que los alumnos puedan encender su entorno virtual Linux y sus servidores de Minecraft desde MasterStudy LMS.</p>
 
 		<form method="post" action="" style="background:#FFF; padding:20px; border:1px solid #CCD0D4; margin-top:20px;">
 			<?php wp_nonce_field( 'playcode_cs_settings_nonce' ); ?>
@@ -1503,10 +1507,17 @@ function playcode_cs_render_admin_settings() {
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="playcode_cs_default_repo">Repositorio Predeterminado</label></th>
+					<th scope="row"><label for="playcode_cs_default_repo">Repositorio Linux KDE</label></th>
 					<td>
 						<input type="text" name="playcode_cs_default_repo" id="playcode_cs_default_repo" value="<?php echo esc_attr( $default_repo ); ?>" class="regular-text" />
 						<p class="description">Repositorio que contiene la imagen de Linux (ej: <code>playcodeprint3d-crypto/kde-lite-ubuntu</code>).</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="playcode_mc_relay_host">Host Relay Minecraft (Google Cloud)</label></th>
+					<td>
+						<input type="text" name="playcode_mc_relay_host" id="playcode_mc_relay_host" value="<?php echo esc_attr( $mc_relay_host ); ?>" class="regular-text" />
+						<p class="description">IP o dominio del servidor FRP de Google Cloud (ej: <code>35.209.249.255</code> o <code>mc.playcode.com.ar</code>).</p>
 					</td>
 				</tr>
 				<tr>
@@ -1525,4 +1536,12 @@ function playcode_cs_render_admin_settings() {
 	</div>
 	<?php
 }
+
+/* ==========================================================================
+   10. MINECRAFT SERVER MANAGER MODULE
+   ========================================================================== */
+if ( file_exists( PLAYCODE_CODESPACES_PATH . 'includes/minecraft-manager.php' ) ) {
+	require_once PLAYCODE_CODESPACES_PATH . 'includes/minecraft-manager.php';
+}
+
 
