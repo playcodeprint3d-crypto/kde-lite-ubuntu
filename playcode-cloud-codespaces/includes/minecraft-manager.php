@@ -65,24 +65,58 @@ function playcode_mc_add_menu_item( $items ) {
 		return $items;
 	}
 
+	foreach ( $items as $it ) {
+		if ( isset( $it['slug'] ) && 'minecraft' === $it['slug'] ) {
+			return $items;
+		}
+	}
+
 	$user_url = playcode_cs_get_account_base_url();
 
-	$items['minecraft'] = array(
-		'order'        => 38,
+	$items[] = array(
+		'id'           => 'minecraft_custom',
 		'slug'         => 'minecraft',
-		'title'        => 'Minecraft',
-		'icon'         => 'stmlms-cube',
-		'badge'        => '🎮',
-		'url'          => $user_url . 'minecraft/',
-		'section_slug' => 'servers',
+		'menu_title'   => '🎮 Minecraft',
+		'title'        => '🎮 Minecraft',
+		'menu_icon'    => 'fa-cubes',
+		'icon'         => 'fa-cubes',
+		'badge'        => '',
+		'menu_url'     => $user_url . 'minecraft/',
+		'menu_place'   => 'learning',
+		'section'      => 'servers',
+		'order'        => 35,
+		'user_profile' => true,
 	);
 
 	return $items;
 }
 
+// 1.5. Override de plantilla
+add_filter( 'stm_lms_template_file', 'playcode_mc_override_template_file', 9999, 2 );
+function playcode_mc_override_template_file( $path, $template_name ) {
+	if ( false !== strpos( $template_name, 'minecraft-custom' ) ) {
+		return PLAYCODE_CODESPACES_PATH . 'templates_override';
+	}
+	return $path;
+}
+
 /* ==========================================================================
    2. HELPER FUNCTIONS
    ========================================================================== */
+
+if ( ! function_exists( 'playcode_cs_get_oauth_login_url' ) ) {
+	function playcode_cs_get_oauth_login_url() {
+		$client_id = get_option( 'playcode_cs_client_id', '' );
+		if ( empty( $client_id ) ) {
+			return '#';
+		}
+		return add_query_arg( array(
+			'client_id' => $client_id,
+			'scope'     => 'codespace,read:user',
+			'state'     => wp_create_nonce( 'playcode_gh_oauth' ),
+		), 'https://github.com/login/oauth/authorize' );
+	}
+}
 
 /**
  * Calcula el puerto FRP único y permanente del alumno (20000 + ID).

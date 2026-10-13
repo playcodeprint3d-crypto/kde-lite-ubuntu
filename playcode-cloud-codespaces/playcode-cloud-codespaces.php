@@ -35,6 +35,21 @@ function playcode_cs_get_account_base_url() {
 	return trailingslashit( home_url( '/cuenta-del-usuario/' ) );
 }
 
+/**
+ * Retorna la URL de autorización OAuth de GitHub.
+ */
+function playcode_cs_get_oauth_login_url() {
+	$client_id = get_option( 'playcode_cs_client_id', '' );
+	if ( empty( $client_id ) ) {
+		return '#';
+	}
+	return add_query_arg( array(
+		'client_id' => $client_id,
+		'scope'     => 'codespace,read:user',
+		'state'     => wp_create_nonce( 'playcode_gh_oauth' ),
+	), 'https://github.com/login/oauth/authorize' );
+}
+
 /* ==========================================================================
    1. MASTERSTUDY LMS INTEGRATION (ROUTES, MENU & TEMPLATES)
    ========================================================================== */
@@ -58,6 +73,11 @@ function playcode_cs_register_custom_routes( $routes ) {
 			'protected' => true,
 			'url'       => 'aistudio',
 		);
+		$routes['user_url']['sub_pages']['minecraft_custom'] = array(
+			'template'  => 'account/minecraft-custom',
+			'protected' => true,
+			'url'       => 'minecraft',
+		);
 	}
 	return $routes;
 }
@@ -69,6 +89,7 @@ function playcode_cs_section_labels( $labels ) {
 		$labels = array();
 	}
 	$labels['codespace'] = 'Laboratorio';
+	$labels['servers']   = 'Mis Servidores';
 	unset( $labels['build'] );
 	unset( $labels['aistudio'] );
 	return $labels;
@@ -78,11 +99,11 @@ function playcode_cs_section_labels( $labels ) {
 add_filter( 'masterstudy_account_menu_section_order', 'playcode_cs_section_order', 9999 );
 function playcode_cs_section_order( $order ) {
 	if ( ! is_array( $order ) ) {
-		$order = array( 'main', 'communication', 'progress', 'finance' );
+		$order = array( 'main', 'codespace', 'servers', 'recursos', 'comunidad', 'communication', 'progress', 'finance' );
 	}
 
 	// Registered sections that should precede 'account'
-	$known_sections = array( 'main', 'communication', 'codespace', 'recursos', 'progress', 'finance' );
+	$known_sections = array( 'main', 'codespace', 'servers', 'recursos', 'comunidad', 'communication', 'progress', 'finance' );
 
 	// Merge existing order with known sections, preserving unique keys
 	$merged = array_unique( array_merge( $order, $known_sections ) );
@@ -189,6 +210,31 @@ function playcode_cs_add_menu_items( $items ) {
 		);
 	}
 
+	// 4. Servidor de Minecraft
+	$has_minecraft = false;
+	foreach ( $items as $it ) {
+		if ( isset( $it['slug'] ) && 'minecraft' === $it['slug'] ) {
+			$has_minecraft = true;
+			break;
+		}
+	}
+	if ( ! $has_minecraft ) {
+		$items[] = array(
+			'id'           => 'minecraft_custom',
+			'slug'         => 'minecraft',
+			'menu_title'   => '🎮 Minecraft',
+			'title'        => '🎮 Minecraft',
+			'menu_icon'    => 'fa-cubes',
+			'icon'         => 'fa-cubes',
+			'badge'        => '',
+			'menu_url'     => $user_url . 'minecraft/',
+			'menu_place'   => 'learning',
+			'section'      => 'servers',
+			'order'        => 35,
+			'user_profile' => true,
+		);
+	}
+
 	return $items;
 }
 
@@ -197,7 +243,8 @@ add_filter( 'stm_lms_template_file', 'playcode_cs_override_template_file', 9999,
 function playcode_cs_override_template_file( $path, $template_name ) {
 	if ( false !== strpos( $template_name, 'codespace-custom' ) ||
 	     false !== strpos( $template_name, 'build-custom' ) ||
-	     false !== strpos( $template_name, 'aistudio-custom' ) ) {
+	     false !== strpos( $template_name, 'aistudio-custom' ) ||
+	     false !== strpos( $template_name, 'minecraft-custom' ) ) {
 		return PLAYCODE_CODESPACES_PATH . 'templates_override';
 	}
 	return $path;
@@ -260,6 +307,24 @@ function playcode_cs_icon_styles() {
 		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item_active i.fa-brain,
 		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item.masterstudy-account-menu__list-item_active i.fa-brain {
 			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04'/%3E%3Cpath d='M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04'/%3E%3C/svg%3E") !important;
+		}
+
+		/* --- fa-cubes (Minecraft Server) --- */
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item i.fa-cubes {
+			font-size: 0 !important;
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23001F4A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21 16-9 5-9-5V8l9-5 9 5v8z'/%3E%3Cpath d='m3 8 9 5 9-5'/%3E%3Cpath d='M12 13v8'/%3E%3C/svg%3E") !important;
+			width: 18px !important;
+			height: 18px !important;
+			display: inline-block !important;
+			background-size: contain !important;
+			background-repeat: no-repeat !important;
+			background-position: center !important;
+			vertical-align: middle !important;
+		}
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item:hover i.fa-cubes,
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item_active i.fa-cubes,
+		.masterstudy-account-menu__list a.masterstudy-account-menu__list-item.masterstudy-account-menu__list-item_active i.fa-cubes {
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21 16-9 5-9-5V8l9-5 9 5v8z'/%3E%3Cpath d='m3 8 9 5 9-5'/%3E%3Cpath d='M12 13v8'/%3E%3C/svg%3E") !important;
 		}
 	</style>
 	<?php
