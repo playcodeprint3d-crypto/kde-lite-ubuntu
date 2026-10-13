@@ -146,37 +146,46 @@ function playcode_mc_register_rest_routes() {
 }
 
 function playcode_mc_rest_get_config( WP_REST_Request $request ) {
-	$user_id = intval( $request->get_param( 'user_id' ) );
-	$login   = sanitize_text_field( $request->get_param( 'login' ) );
+	global $wpdb;
+	$user_id        = intval( $request->get_param( 'user_id' ) );
+	$login          = sanitize_text_field( $request->get_param( 'login' ) );
+	$codespace_name = sanitize_text_field( $request->get_param( 'codespace' ) );
+
+	if ( ! $user_id && ! empty( $codespace_name ) ) {
+		$matched_cs = $wpdb->get_var( $wpdb->prepare(
+			"SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = 'playcode_mc_codespace_name' AND meta_value = %s LIMIT 1",
+			$codespace_name
+		) );
+		if ( $matched_cs ) {
+			$user_id = intval( $matched_cs );
+		}
+	}
 
 	if ( ! $user_id && ! empty( $login ) ) {
-		// Buscar usuario por github login en user_meta
-		$users = get_users( array(
-			'meta_key'   => 'playcode_github_user',
-			'number'     => 1,
+		// Buscar usuario por github login en user_meta (PHP serializado exacto)
+		$matched_user = $wpdb->get_var( $wpdb->prepare(
+			"SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = 'playcode_github_user' AND meta_value LIKE %s ORDER BY user_id DESC LIMIT 1",
+			'%"login";s:' . strlen( $login ) . ':"' . $wpdb->esc_like( $login ) . '";%'
 		) );
-		foreach ( $users as $u ) {
-			$meta = get_user_meta( $u->ID, 'playcode_github_user', true );
-			if ( is_array( $meta ) && isset( $meta['login'] ) && strtolower( $meta['login'] ) === strtolower( $login ) ) {
-				$user_id = $u->ID;
-				break;
-			}
+		if ( $matched_user ) {
+			$user_id = intval( $matched_user );
 		}
 	}
 
 	if ( ! $user_id ) {
-		$user_id = 1;
+		$user_id = 3; // Default to active student
 	}
 
 	$version = get_user_meta( $user_id, 'playcode_mc_version', true );
 	if ( empty( $version ) ) {
-		$version = '1.20.4';
+		$version = '1.21.1';
 	}
 
 	$port = playcode_mc_get_student_port( $user_id );
 	$host = playcode_mc_get_relay_host();
 
 	return rest_ensure_response( array(
+		'user_id'        => $user_id,
 		'version'        => $version,
 		'port'           => $port,
 		'relay_host'     => $host,
@@ -220,6 +229,10 @@ function playcode_mc_ajax_status() {
 		}
 	}
 
+	if ( $mc_codespace && ! empty( $mc_codespace['name'] ) ) {
+		update_user_meta( $user_id, 'playcode_mc_codespace_name', $mc_codespace['name'] );
+	}
+
 	$port        = playcode_mc_get_student_port( $user_id );
 	$host        = playcode_mc_get_relay_host();
 	$public_addr = ( $port === 25565 ) ? $host : "{$host}:{$port}";
@@ -259,9 +272,17 @@ function playcode_mc_ajax_create() {
 
 	$branch = ! empty( $repo_info['default_branch'] ) ? $repo_info['default_branch'] : 'main';
 
+	$port = playcode_mc_get_student_port( $user_id );
+	$host = playcode_mc_get_relay_host();
+
 	$create_res = playcode_cs_api_request( '/user/codespaces', $token, 'POST', array(
-		'repository_id' => intval( $repo_info['id'] ),
-		'ref'           => $branch,
+		'repository_id'        => intval( $repo_info['id'] ),
+		'ref'                  => $branch,
+		'environment_variables' => array(
+			array( 'name' => 'PLAYCODE_USER_ID',    'value' => (string) $user_id ),
+			array( 'name' => 'PLAYCODE_RELAY_HOST', 'value' => $host ),
+			array( 'name' => 'PLAYCODE_RELAY_PORT', 'value' => (string) $port ),
+		),
 	) );
 
 	if ( isset( $create_res['error'] ) ) {
