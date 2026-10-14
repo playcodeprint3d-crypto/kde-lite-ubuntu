@@ -289,6 +289,10 @@ function playcode_mc_ajax_create() {
 		wp_send_json_error( $create_res['error'] );
 	}
 
+	if ( ! empty( $create_res['name'] ) ) {
+		update_user_meta( $user_id, 'playcode_mc_codespace_name', sanitize_text_field( $create_res['name'] ) );
+	}
+
 	wp_send_json_success( $create_res );
 }
 
