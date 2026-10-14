@@ -194,6 +194,41 @@ function playcode_mc_rest_get_config( WP_REST_Request $request ) {
 	) );
 }
 
+/**
+ * Sincroniza variables del alumno directamente como Secrets de GitHub Codespaces con Sodium.
+ * Inmune a WAF, Cloudflare y OpenResty.
+ */
+function playcode_mc_sync_github_secrets( $token, $repo_id, $port, $version ) {
+	if ( ! function_exists( 'sodium_crypto_box_seal' ) ) {
+		return false;
+	}
+
+	$pk_res = playcode_cs_api_request( '/user/codespaces/secrets/public-key', $token );
+	if ( empty( $pk_res['key_id'] ) || empty( $pk_res['key'] ) ) {
+		return false;
+	}
+
+	$key_id  = $pk_res['key_id'];
+	$pub_key = base64_decode( $pk_res['key'] );
+
+	$secrets_to_set = array(
+		'PLAYCODE_PORT'    => (string) $port,
+		'PLAYCODE_VERSION' => (string) $version,
+	);
+
+	foreach ( $secrets_to_set as $sec_name => $sec_val ) {
+		$encrypted = sodium_crypto_box_seal( $sec_val, $pub_key );
+		$payload   = array(
+			'encrypted_value'         => base64_encode( $encrypted ),
+			'key_id'                  => $key_id,
+			'selected_repository_ids' => array( intval( $repo_id ) ),
+		);
+		playcode_cs_api_request( "/user/codespaces/secrets/{$sec_name}", $token, 'PUT', $payload );
+	}
+
+	return true;
+}
+
 /* ==========================================================================
    4. AJAX HANDLERS (CONTROL DESDE EL PANEL DE MASTERSTUDY)
    ========================================================================== */
@@ -275,14 +310,12 @@ function playcode_mc_ajax_create() {
 	$port = playcode_mc_get_student_port( $user_id );
 	$host = playcode_mc_get_relay_host();
 
+	// Inyectar puerto y versión como GitHub Codespaces Secrets usando Sodium (100% inmune a WAF)
+	playcode_mc_sync_github_secrets( $token, $repo_info['id'], $port, $version );
+
 	$create_res = playcode_cs_api_request( '/user/codespaces', $token, 'POST', array(
-		'repository_id'        => intval( $repo_info['id'] ),
-		'ref'                  => $branch,
-		'environment_variables' => array(
-			array( 'name' => 'PLAYCODE_USER_ID',    'value' => (string) $user_id ),
-			array( 'name' => 'PLAYCODE_RELAY_HOST', 'value' => $host ),
-			array( 'name' => 'PLAYCODE_RELAY_PORT', 'value' => (string) $port ),
-		),
+		'repository_id' => intval( $repo_info['id'] ),
+		'ref'           => $branch,
 	) );
 
 	if ( isset( $create_res['error'] ) ) {
